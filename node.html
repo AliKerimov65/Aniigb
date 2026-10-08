@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Узел МАРХИ · крупный план · Спортзал 24×46 м в Дудинке</title>
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#0e1420;font-family:'Segoe UI',system-ui,Arial,sans-serif}
+#c{position:absolute;inset:0}
+#panel{position:absolute;top:14px;left:14px;background:rgba(13,20,32,.88);border:1px solid rgba(120,170,255,.25);border-radius:12px;padding:12px 14px;color:#dbe7ff;font-size:12.5px;max-width:300px;backdrop-filter:blur(6px)}
+#panel h1{font-size:14px;margin:0 0 8px;color:#8fc3ff;letter-spacing:.4px}
+#panel .g{margin:8px 0 4px;color:#9db6dd;font-size:11px;text-transform:uppercase;letter-spacing:1px}
+#panel label{display:flex;align-items:center;gap:7px;margin:4px 0;cursor:pointer;white-space:nowrap}
+#panel input{accent-color:#5aa2ff}
+.sw{width:11px;height:11px;border-radius:3px;display:inline-block;flex:none}
+.btn{display:inline-block;margin:4px 4px 0 0;padding:4px 10px;font-size:11px;background:rgba(90,162,255,.12);border:1px solid rgba(90,162,255,.35);color:#bcd6ff;border-radius:8px;cursor:pointer}
+.btn:hover{background:rgba(90,162,255,.25)}
+#hint{position:absolute;bottom:12px;left:14px;color:#8fa8cf;font-size:11.5px;background:rgba(13,20,32,.7);padding:6px 10px;border-radius:8px}
+#spec{position:absolute;top:14px;right:14px;background:rgba(13,20,32,.88);border:1px solid rgba(120,170,255,.25);border-radius:12px;padding:12px 14px;color:#dbe7ff;font-size:12px;max-width:270px;backdrop-filter:blur(6px)}
+#spec h2{font-size:12.5px;margin:0 0 8px;color:#8fc3ff}
+#spec table{width:100%;border-collapse:collapse;font-size:11.5px}
+#spec td{padding:3px 0;border-bottom:1px dashed rgba(140,180,255,.15)}
+#spec td:last-child{text-align:right;color:#a9c8f5}
+#slider{position:absolute;bottom:52px;left:50%;transform:translateX(-50%);width:min(520px,60vw);background:rgba(13,20,32,.88);border:1px solid rgba(120,170,255,.25);border-radius:12px;padding:10px 16px;color:#cfe0ff;font-size:12px}
+#slider input{width:100%;accent-color:#5aa2ff}
+#expl{position:absolute;bottom:120px;left:50%;transform:translateX(-50%);color:#7f9cc9;font-size:11px}
+
+/* ---- мобильная адаптация ---- */
+@media (max-width: 640px) {
+  #panel { top:calc(10px + env(safe-area-inset-top)); left:10px; width:min(250px,58vw);
+    max-height:44vh; max-height:44dvh; overflow-y:auto; padding:10px 12px; font-size:11.5px; }
+  #spec { display:none; }
+  #hint { bottom:calc(8px + env(safe-area-inset-bottom)); font-size:10px; }
+  #slider { bottom:calc(44px + env(safe-area-inset-bottom)); width:86vw; padding:8px 12px; }
+  #expl { bottom:calc(108px + env(safe-area-inset-bottom)); font-size:10px; }
+}
+
+</style>
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="panel">
+  <h1>Типовой узел ПСПК (система МАРХИ)</h1>
+  <div class="g">Состав узла</div>
+  <div id="layers"></div>
+  <div class="g">Вид</div>
+  <button class="btn" id="v-iso">Изометрия</button>
+  <button class="btn" id="v-front">Сбоку</button>
+  <button class="btn" id="v-top">Сверху</button>
+  <button class="btn" id="v-spin">Вращение вкл/выкл</button>
+  <div style="margin-top:10px;font-size:11px">
+    <a href="index.html" style="color:#8fc3ff">← К общей модели зала</a>
+  </div>
+</div>
+<div id="spec">
+  <h2>Параметры узла (типовой)</h2>
+  <table>
+    <tr><td>Корпус узла</td><td>сфера Ø160–220</td></tr>
+    <tr><td>Материал корпуса</td><td>сталь 09Г2С / 40Х</td></tr>
+    <tr><td>Отверстия под болты</td><td>резьба М20–М36</td></tr>
+    <tr><td>Болт стяжной</td><td>высокопрочный, 10.9</td></tr>
+    <tr><td>Поводковая втулка</td><td>с гранями под ключ</td></tr>
+    <tr><td>Вкладыш в трубе</td><td>заглушка с отв. под болт</td></tr>
+    <tr><td>Пояса</td><td>трубы Ø89×4 … Ø114×5</td></tr>
+    <tr><td>Раскосы</td><td>трубы Ø60×3 … Ø76×3.5</td></tr>
+    <tr><td>Число примыканий</td><td>до 18 стержней</td></tr>
+    <tr><td>Монтаж</td><td>1 болт на стержень, ключ</td></tr>
+  </table>
+</div>
+<div id="hint">Колесо мыши — масштаб · ЛКМ — вращение · Слайдер ниже — разборка узла (разнесение деталей)</div>
+<div id="expl">Разнесённый вид: болт → шайба → поводковая втулка → вкладыш → труба</div>
+<div id="slider">
+  Разборка узла: <span id="sv">0%</span>
+  <input type="range" id="exp" min="0" max="100" value="0">
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x0e1420);
+scene.fog=new THREE.Fog(0x0e1420,14,40);
+const camera=new THREE.PerspectiveCamera(45,1,0.01,200);
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;
+const labelRenderer=new CSS2DRenderer();
+labelRenderer.domElement.style.position='absolute';labelRenderer.domElement.style.top='0';labelRenderer.domElement.style.pointerEvents='none';
+document.body.appendChild(labelRenderer.domElement);
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h);labelRenderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();
+
+scene.add(new THREE.HemisphereLight(0x9db8e8,0x1a2233,0.9));
+const sun=new THREE.DirectionalLight(0xfff2dd,1.6);sun.position.set(4,8,5);scene.add(sun);
+const fill=new THREE.DirectionalLight(0x88aaff,0.5);fill.position.set(-5,-3,-4);scene.add(fill);
+
+function label(txt,pos,cls){const d=document.createElement('div');d.className=cls||'lbl';d.style.cssText='color:#cfe0ff;font-size:11px;background:rgba(13,20,32,.78);padding:2px 7px;border-radius:6px;border:1px solid rgba(120,170,255,.3);white-space:nowrap';d.textContent=txt;const o=new CSS2DObject(d);o.position.copy(pos);scene.add(o);return o}
+
+const MAT={
+ body:new THREE.MeshStandardMaterial({color:0xd7a94f,metalness:0.75,roughness:0.32}),          // корпус узла
+ bolt:new THREE.MeshStandardMaterial({color:0x8a94a6,metalness:0.9,roughness:0.25}),           // болт
+ bush:new THREE.MeshStandardMaterial({color:0xb9822e,metalness:0.8,roughness:0.3}),            // поводковая втулка
+ insert:new THREE.MeshStandardMaterial({color:0x9a7b52,metalness:0.8,roughness:0.35}),         // вкладыш
+ tubeC:new THREE.MeshStandardMaterial({color:0x35807a,metalness:0.6,roughness:0.45}),          // пояс
+ tubeD:new THREE.MeshStandardMaterial({color:0x6fa8c9,metalness:0.6,roughness:0.45}),          // раскос
+ washer:new THREE.MeshStandardMaterial({color:0x6b7686,metalness:0.9,roughness:0.3}),
+ cut:new THREE.MeshStandardMaterial({color:0xffe1b0,metalness:0.1,roughness:0.7})
+};
+
+// ==== параметры узла (масштаб 1:1 в метрах, но визуально укрупнен x1 для удобства) ====
+const R=0.11;            // радиус сферического корпуса
+const TUBE_R1=0.056;     // пояс Ø112
+const TUBE_R2=0.038;     // раскос Ø76
+const groups={};
+function grp(n){const g=new THREE.Group();g.name=n;scene.add(g);groups[n]=g;return g}
+const gBody=grp('body'), gBolts=grp('bolts'), gBush=grp('bush'), gIns=grp('insert'), gTubes=grp('tubes'), gDim=grp('dims');
+
+// корпус: сфера с площадками (цилиндрические бобышки под каждый стержень)
+const body=new THREE.Mesh(new THREE.SphereGeometry(R,48,32),MAT.body);gBody.add(body);
+// внутренний сквозной намёк — тёмная сфера поменьше не нужна; добавим кольцевые канавки
+for(let i=-1;i<=1;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(R*1.001,0.004,8,64),MAT.washer);ring.rotation.x=Math.PI/2;ring.position.y=i*R*0.45;ring.scale.setScalar(Math.cos(i*0.45));gBody.add(ring)}
+
+// направления стержней: 4 поясных в плоскости + 4 раскоса вниз под 45°
+const dirs=[];
+const A=[[1,0,0],[0,0,1],[-1,0,0],[0,0,-1]]; // пояс
+A.forEach(d=>dirs.push({v:new THREE.Vector3(...d).normalize(),type:'chord'}));
+for(let i=0;i<4;i++){const a=i*Math.PI/2+Math.PI/4;const v=new THREE.Vector3(Math.cos(a),-1,Math.sin(a)).normalize();dirs.push({v,type:'diag'})}
+
+// детали вдоль каждого направления
+const parts=[]; // {obj, dir, baseOff, expOff}
+function addPart(g,obj,dir,baseOff,expPer){g.add(obj);obj.position.copy(dir.v.clone().multiplyScalar(baseOff));if(dir.q)obj.quaternion.copy(dir.q);parts.push({obj,dir:dir.v,baseOff,expPer})}
+
+dirs.forEach((d,di)=>{
+  const q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.v);
+  d.q=q;
+  const isChord=d.type==='chord';
+  const tr=isChord?TUBE_R1:TUBE_R2;
+  // бобышка на корпусе
+  const boss=new THREE.Mesh(new THREE.CylinderGeometry(tr*1.25,tr*1.25,0.03,24),MAT.body);
+  addPart(gBody,boss,d,R-0.005,0);
+  // 1) болт (шпилька) — проходит через втулку
+  const boltLen=0.34;
+  const bolt=new THREE.Mesh(new THREE.CylinderGeometry(0.014,0.014,boltLen,12),MAT.bolt);
+  addPart(gBolts,bolt,d,R+boltLen/2-0.02,0.55);
+  const bHead=new THREE.Mesh(new THREE.CylinderGeometry(0.026,0.026,0.022,6),MAT.bolt);
+  addPart(gBolts,bHead,d,R+boltLen+0.005,0.55);
+  // 2) шайба
+  const washer=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.008,20),MAT.washer);
+  addPart(gBolts,washer,d,R+0.10,0.42);
+  // 3) поводковая втулка (шестигранная)
+  const bush=new THREE.Mesh(new THREE.CylinderGeometry(tr*0.62,tr*0.62,0.075,6),MAT.bush);
+  addPart(gBush,bush,d,R+0.16,0.30);
+  // 4) вкладыш (заглушка с бобышкой под болт)
+  const ins=new THREE.Mesh(new THREE.CylinderGeometry(tr*0.96,tr*0.96,0.02,24),MAT.insert);
+  addPart(gIns,ins,d,R+0.225,0.16);
+  const insNeck=new THREE.Mesh(new THREE.CylinderGeometry(tr*0.5,tr*0.5,0.05,16),MAT.insert);
+  addPart(gIns,insNeck,d,R+0.255,0.16);
+  // 5) труба
+  const tLen=isChord?0.62:0.72;
+  const tube=new THREE.Mesh(new THREE.CylinderGeometry(tr,tr,tLen,28),isChord?MAT.tubeC:MAT.tubeD);
+  addPart(gTubes,tube,d,R+0.28+tLen/2,0);
+  // срез торца трубы (светлый)
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(tr*0.99,0.006,8,28),MAT.cut);
+  rim.position.copy(d.v.clone().multiplyScalar(R+0.28+tLen));rim.quaternion.copy(q);rim.rotateX(Math.PI/2);gTubes.add(rim);
+});
+
+// размеры и подписи
+label('Корпус узла — сфера с резьбовыми отверстиями',new THREE.Vector3(0,0.30,0));
+label('Болт высокопрочный 10.9',new THREE.Vector3(0.62,0.30,0.62));
+label('Поводковая втулка (грани под ключ)',new THREE.Vector3(-0.72,0.34,0));
+label('Вкладыш (заглушка) в торце трубы',new THREE.Vector3(0,-0.34,0.72));
+label('Пояс: труба Ø89–114 мм',new THREE.Vector3(0.95,0.16,0));
+label('Раскос: труба Ø60–76 мм под 45°',new THREE.Vector3(-0.55,-0.55,0.55));
+label('1 стержень = 1 болт: монтаж ключом, без сварки',new THREE.Vector3(0,-1.05,0));
+
+// слои
+const LAYERS=[['body','Корпус узла','#d7a94f'],['bolts','Болты и шайбы','#8a94a6'],['bush','Поводковые втулки','#b9822e'],['insert','Вкладыши','#9a7b52'],['tubes','Стержни (трубы)','#35807a']];
+const layersDiv=document.getElementById('layers');
+LAYERS.forEach(([k,n,c])=>{
+  const lab=document.createElement('label');
+  lab.innerHTML=`<input type="checkbox" id="L-${k}" checked><span class="sw" style="background:${c}"></span>${n}`;
+  layersDiv.appendChild(lab);
+  lab.querySelector('input').addEventListener('change',e=>{groups[k].visible=e.target.checked});
+});
+
+// разборка
+let explode=0;
+const slider=document.getElementById('exp');
+slider.addEventListener('input',()=>{explode=slider.value/100;document.getElementById('sv').textContent=slider.value+'%'});
+function applyExplode(){parts.forEach(p=>{p.obj.position.copy(p.dir.clone().multiplyScalar(p.baseOff+p.expPer*explode))})}
+
+// виды
+function setView(px,py,pz){camera.position.set(px,py,pz);controls.target.set(0,0,0);controls.update()}
+document.getElementById('v-iso').onclick=()=>setView(1.6,1.1,1.6);
+document.getElementById('v-front').onclick=()=>setView(0,0.25,2.3);
+document.getElementById('v-top').onclick=()=>setView(0.001,2.4,0.001);
+let spin=true;document.getElementById('v-spin').onclick=()=>spin=!spin;
+setView(1.6,1.1,1.6);
+
+const clock=new THREE.Clock();
+function loop(){
+  requestAnimationFrame(loop);
+  const dt=clock.getDelta();
+  if(spin){groups.body.rotation.y+=dt*0.25;groups.bolts.rotation.y+=dt*0.25;groups.bush.rotation.y+=dt*0.25;groups.insert.rotation.y+=dt*0.25;groups.tubes.rotation.y+=dt*0.25}
+  applyExplode();
+  controls.update();
+  renderer.render(scene,camera);labelRenderer.render(scene,camera);
+}
+loop();
+</script>
+</body>
+</html>

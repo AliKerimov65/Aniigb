@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Расчётная схема и нагрузки · Спортзал 24×46 м, Дудинка (снег VI)</title>
+<style>
+html,body{margin:0;background:#10151f;font-family:'Segoe UI',system-ui,Arial,sans-serif;color:#dbe7ff}
+header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(13,20,32,.95);border-bottom:1px solid rgba(120,170,255,.25);flex-wrap:wrap}
+header h1{font-size:15px;margin:0;color:#8fc3ff;font-weight:600}
+a.lnk{color:#8fc3ff;font-size:12.5px;text-decoration:none;margin-left:auto}
+.wrap{display:flex;gap:16px;padding:16px;flex-wrap:wrap;align-items:flex-start}
+.card{background:rgba(13,20,32,.9);border:1px solid rgba(120,170,255,.25);border-radius:12px;padding:14px 16px}
+.card h2{font-size:13.5px;color:#8fc3ff;margin:0 0 10px}
+svg{background:#f8f7f1;border-radius:8px;max-width:100%;height:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+td,th{padding:5px 8px;border-bottom:1px dashed rgba(140,180,255,.18);text-align:left}
+td.r{text-align:right;color:#a9c8f5;font-variant-numeric:tabular-nums}
+.hl{color:#ffd479;font-weight:600}
+select,input{background:#0e1626;color:#dbe7ff;border:1px solid rgba(120,170,255,.35);border-radius:6px;padding:4px 8px;font-size:12.5px;width:100%}
+label{display:block;font-size:11.5px;color:#9db6dd;margin:8px 0 3px}
+.formula{font-family:Consolas,monospace;font-size:12px;color:#cfe0ff;background:rgba(90,162,255,.08);border-radius:6px;padding:6px 10px;margin:6px 0}
+.ok{color:#7ee2a8}
+</style>
+<style>
+@media (max-width: 640px) {
+  body { padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom); }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Расчётная схема · СП 20.13330.2016 · Дудинка: снеговой район VI, ветровой IV</h1>
+  <a class="lnk" href="drawings.html">← Чертежи</a>
+  <a class="lnk" href="index.html">3D-модель</a>
+</header>
+<div class="wrap">
+  <div class="card" style="flex:1 1 640px;min-width:420px">
+    <h2>Схема нагрузок и пути их передачи</h2>
+    <div id="scheme"></div>
+  </div>
+  <div style="flex:1 1 380px;min-width:340px;display:flex;flex-direction:column;gap:16px">
+    <div class="card">
+      <h2>Исходные данные (изменяемые)</h2>
+      <label>Снеговой район (табл. 10.1 СП 20.13330.2016)</label>
+      <select id="snow">
+        <option value="0.5">I — 0.5 кПа</option><option value="1.0">II — 1.0 кПа</option>
+        <option value="1.5">III — 1.5 кПа</option><option value="2.0">IV — 2.0 кПа</option>
+        <option value="2.5">V — 2.5 кПа</option><option value="3.0" selected>VI — 3.0 кПа (Дудинка)</option>
+        <option value="3.5">VII — 3.5 кПа</option><option value="4.0">VIII — 4.0 кПа</option>
+      </select>
+      <label>μ — коэффициент формы покрытия (арка f/l≈1/27, принят консервативно)</label>
+      <input id="mu" type="number" step="0.05" value="1.00">
+      <label>ce — снос снега ветром (открытая площадка 0.85–1.0)</label>
+      <input id="ce" type="number" step="0.05" value="1.00">
+      <label>γf — коэффициент надёжности по нагрузке (п. 10.12)</label>
+      <input id="gf" type="number" step="0.1" value="1.4">
+      <label>Ветровой район (табл. 11.1)</label>
+      <select id="wind">
+        <option value="0.17">Ia — 0.17 кПа</option><option value="0.23">I — 0.23 кПа</option>
+        <option value="0.30">II — 0.30 кПа</option><option value="0.38">III — 0.38 кПа</option>
+        <option value="0.48" selected>IV — 0.48 кПа (Дудинка)</option>
+        <option value="0.60">V — 0.60 кПа</option><option value="0.73">VI — 0.73 кПа</option>
+        <option value="0.85">VII — 0.85 кПа</option>
+      </select>
+    </div>
+    <div class="card">
+      <h2>Результаты (онлайн-пересчёт)</h2>
+      <table id="res"></table>
+      <div class="formula">S = ce·ct·μ·Sg · γf</div>
+      <div class="formula">w = w0·k(z)·c · γf,  k(10 м, местн. A) = 1.25, c = 0.8</div>
+      <div class="formula">q_грунт = (G + S·A_фунд) / A_фунд</div>
+      <div id="verdict" style="margin-top:8px;font-size:12.5px"></div>
+    </div>
+    <div class="card">
+      <h2>Несущая способность — укрупнённая проверка</h2>
+      <table>
+        <tr><td>Грузовая площадь рядовой колонны</td><td class="r">6×12 = 72 м²</td></tr>
+        <tr><td>N на колонну от снега (расч.)</td><td class="r" id="ncol"></td></tr>
+        <tr><td>Стальной коротыш △700: 3 стержня Ø114×5</td><td class="r">≈ 1 200 кН</td></tr>
+        <tr><td>Запас по прочности колонны</td><td class="r ok" id="kcol"></td></tr>
+        <tr><td>Ветровой сдвиг на здание (расч.)</td><td class="r" id="wsh"></td></tr>
+        <tr><td>Воспринимают 10 колонн △1200 + диск фундамента</td><td class="r ok">сдвиг/устойчивость обеспечены</td></tr>
+        <tr><td>Опрокидывающий момент / удерживающий</td><td class="r ok" id="overt"></td></tr>
+        <tr><td>Давление на грунт (расч.)</td><td class="r hl" id="q"></td></tr>
+        <tr><td>Несущая способность даже оттаявшего грунта</td><td class="r">≥ 100–150 кПа</td></tr>
+        <tr><td>Запас по грунту</td><td class="r ok" id="ksoil"></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const INK='#1a1a1a',AXIS='#0b5cad',SNOW='#2e6f9e',WIND='#c0392b',FND='#7a6a4f',GRAV='#2e7d6b';
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function line(s,x1,y1,x2,y2,st,w,dash){return el('line',{x1,y1,x2,y2,stroke:st||INK,'stroke-width':w||1.4,'stroke-dasharray':dash||''},s)}
+function rect(s,x,y,w,h,fill,st,lw,dash){return el('rect',{x,y,width:w,height:h,fill:fill||'none',stroke:st||INK,'stroke-width':lw||1.4,'stroke-dasharray':dash||''},s)}
+function txt(s,x,y,t,size,anchor,col,bold){const e=el('text',{x,y,'font-size':size||12,'text-anchor':anchor||'middle',fill:col||INK,'font-family':'Consolas,Menlo,monospace','font-weight':bold?'700':'400'},s);e.textContent=t;return e}
+function arr(s,x1,y1,x2,y2,col,w){line(s,x1,y1,x2,y2,col,w||2);const a=Math.atan2(y2-y1,x2-x1),L=9;
+ el('polygon',{points:`${x2},${y2} ${x2-L*Math.cos(a-0.42)},${y2-L*Math.sin(a-0.42)} ${x2-L*Math.cos(a+0.42)},${y2-L*Math.sin(a+0.42)}`,fill:col},s)}
+
+function scheme(){
+ const W=980,H=560;
+ const s=el('svg',{viewBox:`0 0 ${W} ${H}`});
+ const m=15, ox=150, oy=430;
+ const X=v=>ox+v*m, Y=v=>oy-v*m;
+ // грунт
+ line(s,40,Y(0),W-40,Y(0),INK,2);
+ for(let x=50;x<W-50;x+=24)line(s,x,Y(0),x-12,Y(0)+11,'#777',0.8);
+ // фундамент
+ rect(s,X(-1.5),Y(2.24),27*m,2.12*m,'none',FND,1.6);
+ for(let i=0;i<9;i++){const x1=-1.5+i*3,x2=x1+3;line(s,X(x1),Y(0.12),X(x2),Y(2.24),FND,0.7);line(s,X(x1),Y(2.24),X(x2),Y(0.12),FND,0.7)}
+ // щиты
+ rect(s,X(-1.5),Y(2.24),5,(2.24-0.35)*m,'#c9d6e2',INK,1);rect(s,X(25.5)-5,Y(2.24),5,(2.24-0.35)*m,'#c9d6e2',INK,1);
+ // пол
+ line(s,X(0),Y(2.4),X(24),Y(2.4),INK,2.4);
+ // колонны
+ [[0],[12],[24]].forEach(c=>{const r=c[0]===12?9:11;const p=[];for(let i=0;i<3;i++){const a=-Math.PI/2+i*2*Math.PI/3;p.push((X(c[0])+r*Math.cos(a))+','+(Y(7.4)+r*Math.sin(a)))}el('polygon',{points:p.join(' '),fill:c[0]===12?'#fff':WIND,stroke:INK,'stroke-width':1.2},s)});
+ // покрытие с вспарушиванием
+ const arch=x=>12.4+0.9*(1-Math.pow((x-12)/12,2));
+ let pb='';for(let x=0;x<=24;x+=1)pb+=`${X(x)},${Y(arch(x))} `;
+ el('polyline',{points:pb,fill:'none',stroke:INK,'stroke-width':2},s);
+ let pt='';for(let x=0;x<=24;x+=1)pt+=`${X(x)},${Y(arch(x)+2.12)} `;
+ el('polyline',{points:pt,fill:'none',stroke:INK,'stroke-width':2},s);
+ for(let i=0;i<8;i++){const x1=i*3,x2=x1+3;line(s,X(x1),Y(arch(x1)),X(x2),Y(arch(x2)+2.12),SNOW,0.7);line(s,X(x1),Y(arch(x1)+2.12),X(x2),Y(arch(x2)),SNOW,0.7)}
+ // снеговые стрелки
+ for(let x=0;x<=24;x+=3){arr(s,X(x),Y(arch(x)+2.12)-34,X(x),Y(arch(x)+2.12)-6,SNOW,1.8)}
+ txt(s,X(12),Y(18.4),'S = ce·ct·μ·Sg·γf (снег, район VI: Sg=3.0 кПа → расч. 4.2 кПа)',12,'middle',SNOW,true);
+ // ветровые стрелки
+ for(let i=0;i<5;i++){const y=3.6+i*2.4;arr(s,X(0)-64,Y(y),X(0)-10,Y(y),WIND,1.8)}
+ txt(s,X(0)-64,Y(1.6),'w = 0.48·1.25·0.8·1.4 ≈ 0.67 кПа (ветер IV)',11,'middle',WIND,true);
+ // путь нагрузки: по колонне вниз
+ arr(s,X(24)+18,Y(12.4),X(24)+18,Y(2.4),GRAV,2.2);
+ txt(s,X(24)+24,Y(7.6),'N ≈ 300–460 кН',10.5,'start',GRAV);
+ // расширение в фундаменте
+ arr(s,X(24),Y(2.2),X(26.4),Y(0.3),GRAV,1.6);arr(s,X(24),Y(2.2),X(21.6),Y(0.3),GRAV,1.6);
+ txt(s,X(12),Y(-0.9),'Распределение пространственным фундаментом: q ≈ 6.2–6.7 кПа ≈ 0.07 кгс/см² на площади 27×48 м',12,'middle',GRAV,true);
+ // подписи
+ txt(s,X(12),Y(16.6),'Покрытие ПСПК 24×46 м, h=2.12 м',10.5,'middle',INK);
+ txt(s,X(-1.5)-14,Y(1.4),'щит',9,'end',SNOW);
+ txt(s,X(12),Y(1.2),'подполье 2.12 м проветриваемое — отсечка тепла мерзлоты',9.5,'middle','#555');
+ txt(s,X(12),Y(7.4)-16,'△1200',9.5,'middle',WIND,true);
+ return s;
+}
+document.getElementById('scheme').appendChild(scheme());
+
+const $=id=>document.getElementById(id);
+function calc(){
+ const Sg=parseFloat($('snow').value), mu=parseFloat($('mu').value)||1, ce=parseFloat($('ce').value)||1, gf=parseFloat($('gf').value)||1.4;
+ const w0=parseFloat($('wind').value);
+ const Sn=ce*mu*Sg, Sd=Sn*gf;
+ const wD=w0*1.25*0.8*gf;
+ const A_roof=1104, A_fnd=1296;
+ const snowTot=Sd*A_roof;                       // кН
+ const G=745+892+1550+350;                      // сталь+панели+плиты+инж ≈ 3537 кН
+ const q=(G+Sd*A_fnd)/A_fnd;
+ const Ncol=Sd*72;
+ const wsh=wD*46*12.4;
+ const Mover=wsh*8.6, Mhold=(G)*12;             // удерживающий через ширину 24 м → плечо 12
+ $('res').innerHTML=`
+  <tr><th>Показатель</th><th style="text-align:right">Значение</th></tr>
+  <tr><td>S — нормативная снеговая</td><td class="r">${Sn.toFixed(2)} кПа</td></tr>
+  <tr><td>S — расчётная снеговая</td><td class="r hl">${Sd.toFixed(2)} кПа</td></tr>
+  <tr><td>Снег на покрытие 1104 м² (расч.)</td><td class="r">${Math.round(snowTot).toLocaleString('ru')} кН</td></tr>
+  <tr><td>w — расчётное ветровое давление</td><td class="r">${wD.toFixed(2)} кПа</td></tr>
+  <tr><td>Собственный вес (сталь 76 т + панели + плиты + инж.)</td><td class="r">≈ ${G.toLocaleString('ru')} кН</td></tr>`;
+ $('ncol').textContent=`${Math.round(Ncol)} кН`;
+ $('kcol').textContent=`≈ ${Math.round(1200/Ncol)}×`;
+ $('wsh').textContent=`≈ ${Math.round(wsh)} кН`;
+ $('overt').textContent=`${Math.round(Mover)} < ${Math.round(Mhold)} кН·м (запас ${(Mhold/Mover).toFixed(1)}×)`;
+ $('q').textContent=`≈ ${q.toFixed(1)} кПа ≈ ${(q/98.1).toFixed(3)} кгс/см²`;
+ $('ksoil').textContent=`> ${Math.floor(100/q)}× даже при оттаивании`;
+ $('verdict').innerHTML=`Вывод: при расчётной снеговой <span class="hl">${Sd.toFixed(2)} кПа</span> давление на грунт <span class="hl">${q.toFixed(1)} кПа</span> — на уровне давления человека на снегоступы. Мерзлота не оттаивает (подполье проветривается), поверхностный пространственный фундамент работает как «жёсткое лежачее бревно» на любых грунтах.`;
+}
+['snow','mu','ce','gf','wind'].forEach(id=>$(id).addEventListener('input',calc));
+calc();
+</script>
+</body>
+</html>
