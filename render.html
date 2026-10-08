@@ -65,11 +65,15 @@
     <button id="mDay">☀ День</button>
     <button id="mNight">☾ Ночь</button>
   </div>
+  <div class="modeRow">
+    <button id="tTrib" class="activeDay">⇤⇥ Трибуны: раздвинуты</button>
+  </div>
   <fieldset><legend>Слои</legend>
     <label><input type="checkbox" id="L-frame" checked><span class="sw" style="background:#3a5f8a"></span>Каркас: фундамент, колонны, плита ПСПК</label>
     <label><input type="checkbox" id="L-facade" checked><span class="sw" style="background:#d8dcd8"></span>Панели изнутри каркаса + парапет</label>
     <label><input type="checkbox" id="L-glass" checked><span class="sw" style="background:#9fc3dd"></span>Остекление (лента + витраж входа)</label>
     <label><input type="checkbox" id="L-ceil" checked><span class="sw" style="background:#f2f0ea"></span>Потолок по нижнему поясу + светильники</label>
+    <label><input type="checkbox" id="L-trib" checked><span class="sw" style="background:#2a6fd4"></span>Трибуны-телескопы ≈310 мест (2×3 ряда)</label>
     <label><input type="checkbox" id="L-ent" checked><span class="sw" style="background:#d97a1e"></span>Входная группа и МАФ</label>
     <label><input type="checkbox" id="L-mast" checked><span class="sw" style="background:#ffd9a0"></span>Мачты наружного освещения 16 м</label>
     <label><input type="checkbox" id="L-sky" checked><span class="sw" style="background:#bcd8f0"></span>Облака</label>
@@ -87,6 +91,7 @@
     <b>Фасадная концепция:</b> ограждающие сэндвич-панели смонтированы с внутренней стороны каркаса — снаружи открыто читается стержневая система МАРХИ (колонны △700/△1200, торец плиты h=2,12).<br>
     <b>Остекление:</b> ленточное на отм. +10,20…+12,00 по обеим продольным осям, ≈165 м² (≈1/6,5 площади поля — боковое естественное освещение по СП 52.13330, без прямой засветки площадки); входная группа — стоечно-ригельный витраж 11,3 × 9,6 м с алюминиевыми импостами. Стеклопакеты трёхкамерные, теплые (Арктика).<br>
     <b>Потолок:</b> сэндвич-панели по нижнему поясу ПСПК, повторяют вспарушивание; спортивные LED-светильники 4×10 рядов.<br>
+    <b>Интерьер:</b> трибуны телескопические 2 × 3 ряда (≈310 мест) вдоль поля; покрытие — бесшовный полиуретан 9 мм на поле, спортивный паркет в зоне циркуляции; освещение 40 LED × 200 Вт (300–500 лк на поле), мостик обслуживания по оси, табло «ВЫХОД» у дверей.<br>
     <b>Ночной режим:</b> внутренняя подсветка зала и атриума, подсветка навеса, 6 мачт 16 м с прожекторами на фасады.<br>
     <a href="index.html" style="color:#0e6aa8">← 3D-модель</a> · <a href="drawings.html" style="color:#0e6aa8">Чертежи</a> · <a href="calc.html" style="color:#0e6aa8">Расчёт</a>
   </div>
@@ -318,7 +323,7 @@ const gFnd = grp('fnd'), gNodes = grp('nodes');
 
 /* ================= ПОЛ ================= */
 const gFloor = grp('floor');
-box(W, FLR_T, L, W/2, FND_TOP + FLR_T/2, L/2, 0xded8c8, gFloor, {rough:0.7});
+box(W, FLR_T, L, W/2, FND_TOP + FLR_T/2, L/2, 0xd8c9a4, gFloor, {rough:0.55});   // спортивный паркет — зона циркуляции
 
 /* ================= КОЛОННЫ △700 / △1200 ================= */
 const gCols = grp('columns'), gColsH = grp('columnsH');
@@ -426,6 +431,8 @@ const glassMat = new THREE.MeshStandardMaterial({
     const xc = x0 + 3, top = yB(xc) - 0.02;
     box(6 - 0.15, top - FFL, 0.15, xc, (FFL + top)/2, L - P_IN, 0, gFac, { mat: panelMat });
   });
+  // эвакуационный выход на северном торце
+  box(1.9, 2.3, 0.12, 15, FFL + 1.15, L - P_IN, 0x3a4a55, gFac, { metal: 0.3, rough: 0.5 });
   // --- южный торец: стоечно-ригельный витраж входной группы x 0,6…11,9 на всю высоту,
   //     остальное — панели ступенями
   [12, 18].forEach(x0 => {
@@ -517,6 +524,27 @@ const lumCones = [];
     cone.position.set(W/2, (yB(12) + FFL)/2 - 0.3, cz);
     gCeil.add(cone);
   });
+  // мостик обслуживания светильников по оси зала
+  const cwY = yB(12) - 0.55;
+  box(1.0, 0.06, CZ1 - CZ0, W/2, cwY, (CZ0+CZ1)/2, 0x6b7684, gCeil, { shadow: false, metal: 0.4, rough: 0.6 });
+  for (let z = CZ0 + 0.5; z <= CZ1 - 0.4; z += 3.9){
+    [0.48, -0.48].forEach(dx => {
+      makeRods([[V(W/2 + dx, cwY + 0.03, z), V(W/2 + dx, cwY + 1.0, z)]], 0.025, 0x9aa4ad, gCeil);
+    });
+  }
+  [1.0, 0.5].forEach(h => {
+    [0.48, -0.48].forEach(dx => {
+      makeRods([[V(W/2 + dx, cwY + h, CZ0 + 0.5), V(W/2 + dx, cwY + h, CZ1 - 0.5)]], 0.025, 0x9aa4ad, gCeil);
+    });
+  });
+  for (let z = CZ0 + 1; z <= CZ1 - 1; z += 6){
+    makeRods([[V(W/2, cwY + 0.03, z), V(W/2, yB(12) - 0.06, z)]], 0.014, 0x9aa4ad, gCeil);
+  }
+  // световые табло «ВЫХОД» — горят всегда
+  const exitMat = new THREE.MeshStandardMaterial({ color: 0x0d2b1a, emissive: 0x2eea8a, emissiveIntensity: 1.1 });
+  box(0.62, 0.24, 0.07, 3.8, FFL + 2.72, P_IN + 0.12, 0, gCeil, { mat: exitMat, shadow: false });
+  box(0.62, 0.24, 0.07, 15, FFL + 2.72, L - P_IN - 0.12, 0, gCeil, { mat: exitMat, shadow: false });
+  label('Мостик обслуживания по оси зала · 40 LED-светильников 200 Вт · 300–500 лк на поле', V(W/2, yB(12) + 0.75, 31), 'tag', gCeil);
   gCeil.userData.coneMat = coneMat;
 }
 
@@ -620,14 +648,120 @@ const gField = grp('field');
 {
   const cx = W/2, cz = (AUX + P_IN + L - P_IN)/2;
   const pw = 19, pl = 38, ly = FFL + 0.012;
-  box(W - 2*P_IN - 0.2, 0.02, 40.08, cx, FFL + 0.005, cz, 0x3f9e4d, gField, {shadow:false, rough:0.9});
-  const line = (w, d, x, z) => box(w, 0.006, d, x, ly + 0.008, z, 0xf4f8f4, gField, {shadow:false, rough:0.6});
+  // зона обегания — спортивный линолеум
+  box(pw + 3, 0.018, pl + 2, cx, FFL + 0.009, cz, 0x7d94a4, gField, {shadow:false, rough:0.7});
+  // поле — бесшовный полиуретан 9 мм
+  box(pw + 0.6, 0.02, pl + 0.6, cx, FFL + 0.01, cz, 0x3f9e4d, gField, {shadow:false, rough:0.42});
+  const line = (w, d, x, z) => box(w, 0.006, d, x, ly + 0.014, z, 0xf4f8f4, gField, {shadow:false, rough:0.6});
   line(pw, 0.08, cx, cz - pl/2); line(pw, 0.08, cx, cz + pl/2);
   line(0.08, pl, cx - pw/2, cz); line(0.08, pl, cx + pw/2, cz);
   line(pw, 0.08, cx, cz);
   const circ = new THREE.Mesh(new THREE.TorusGeometry(3, 0.045, 8, 48),
     new THREE.MeshStandardMaterial({ color: 0xf4f8f4, roughness: 0.6 }));
-  circ.rotation.x = Math.PI/2; circ.position.set(cx, ly + 0.008, cz); gField.add(circ);
+  circ.rotation.x = Math.PI/2; circ.position.set(cx, ly + 0.014, cz); gField.add(circ);
+  // ворота 3×2 м с сеткой
+  const net = { opacity: 0.22, rough: 0.9, shadow: false, double: true };
+  [cz - pl/2, cz + pl/2].forEach((gz, gi) => {
+    const gd = gi === 0 ? 1 : -1;                    // глубина ворот наружу от поля
+    const gw = 3, gh = 2, gdep = 1.0;
+    makeRods([
+      [V(cx - gw/2, ly, gz), V(cx - gw/2, ly + gh, gz)],
+      [V(cx + gw/2, ly, gz), V(cx + gw/2, ly + gh, gz)],
+      [V(cx - gw/2, ly + gh, gz), V(cx + gw/2, ly + gh, gz)],
+      [V(cx - gw/2, ly + gh, gz), V(cx - gw/2, ly + gh - 0.35, gz + gd*gdep)],
+      [V(cx + gw/2, ly + gh, gz), V(cx + gw/2, ly + gh - 0.35, gz + gd*gdep)],
+      [V(cx - gw/2, ly, gz + gd*gdep), V(cx - gw/2, ly + gh - 0.35, gz + gd*gdep)],
+      [V(cx + gw/2, ly, gz + gd*gdep), V(cx + gw/2, ly + gh - 0.35, gz + gd*gdep)],
+      [V(cx - gw/2, ly, gz + gd*gdep), V(cx + gw/2, ly, gz + gd*gdep)]
+    ], 0.055, 0xf4f6f8, gField);
+    box(gw, gh, 0.01, cx, ly + gh/2, gz + gd*gdep, 0xdfe8ee, gField, net);           // задняя сетка
+    box(0.01, gh - 0.2, gdep, cx - gw/2, ly + (gh - 0.2)/2 + 0.1, gz + gd*gdep/2, 0xdfe8ee, gField, net);
+    box(0.01, gh - 0.2, gdep, cx + gw/2, ly + (gh - 0.2)/2 + 0.1, gz + gd*gdep/2, 0xdfe8ee, gField, net);
+    box(gw, 0.01, gdep, cx, ly + gh - 0.18, gz + gd*gdep/2, 0xdfe8ee, gField, net);  // верхняя сетка
+  });
+}
+
+/* ================= ТРИБУНЫ-ТЕЛЕСКОПЫ вдоль поля ================= */
+const gTrib = grp('trib');
+let tribCur = 1, tribTarget = 1;                     // 1 — раздвинуты, 0 — сдвинуты к стене
+let tribTick = null;
+{
+  const ROWS = 3, ROWD = 0.8, RISE = 0.4;
+  const ZC = (AUX + P_IN + L - P_IN)/2, ZLEN = 28.0, Z0 = ZC - ZLEN/2, AISLE = 0.65;
+  const platMat = new THREE.MeshStandardMaterial({ color: 0x8a939c, metalness: 0.3, roughness: 0.6 });
+  const seatMatBase = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55 });
+  const panGeo = new THREE.BoxGeometry(0.42, 0.09, 0.4);
+  const backGeo = new THREE.BoxGeometry(0.07, 0.38, 0.4);
+  const cBlue = new THREE.Color(0x2a6fd4), cOr = new THREE.Color(0xd97a1e);
+  const _qq = new THREE.Quaternion(), _ss = new THREE.Vector3();
+  const tribRows = [];
+  [-1, 1].forEach(s => {
+    const wall = s > 0 ? (W - P_IN + 0.075) : (P_IN - 0.075);
+    const d = s > 0 ? -1 : 1;                        // направление от стены в зал
+    for (let i = 0; i < ROWS; i++){
+      const g = new THREE.Group();
+      g.position.set(wall + d*i*0.8, FFL, 0);
+      const py = 0.32 + i * RISE;                    // верх платформы над полом
+      box(ROWD - 0.06, 0.1, ZLEN, d*(0.05 + ROWD/2), py - 0.05, ZC, 0, g, { mat: platMat });
+      // телескопические рамы под платформой
+      const fr = [];
+      for (let m = 0; m < 5; m++){
+        const zf = Z0 + 1.5 + m * (ZLEN - 3) / 4;
+        fr.push([V(d*0.14, 0.02, zf), V(d*0.14, py - 0.1, zf)],
+                [V(d*0.70, 0.02, zf), V(d*0.70, py - 0.1, zf)],
+                [V(d*0.14, 0.02, zf), V(d*0.70, py - 0.1, zf)]);
+      }
+      makeRods(fr, 0.028, 0x37414b, g, { seg: 5 });
+      // кресла (синие/оранжевые через одно), проход по центру
+      const zs = [];
+      for (let z = Z0 + 0.55; z <= Z0 + ZLEN - 0.55 + 0.001; z += 0.5){
+        if (Math.abs(z - ZC) < AISLE) continue;
+        zs.push(z);
+      }
+      const pan = new THREE.InstancedMesh(panGeo, seatMatBase.clone(), zs.length);
+      const back = new THREE.InstancedMesh(backGeo, seatMatBase.clone(), zs.length);
+      zs.forEach((z, k) => {
+        _m.compose(V(d*0.52, py + 0.24, z), _qq, _ss.set(1, 1, 1));
+        pan.setMatrixAt(k, _m);
+        _m.compose(V(d*0.30, py + 0.42, z), _qq, _ss);
+        back.setMatrixAt(k, _m);
+        const c = (k + i) % 2 ? cOr : cBlue;
+        pan.setColorAt(k, c); back.setColorAt(k, c);
+      });
+      pan.castShadow = back.castShadow = true;
+      g.add(pan, back);
+      // торцевые ограждения ряда + заднее ограждение верхнего ряда
+      const rr = [];
+      [Z0 + 0.06, Z0 + ZLEN - 0.06].forEach(zr => {
+        rr.push([V(d*0.80, py, zr), V(d*0.80, py + 1.0, zr)]);
+        rr.push([V(d*0.08, py, zr), V(d*0.08, py + 1.0, zr)]);
+        rr.push([V(d*0.08, py + 1.0, zr), V(d*0.80, py + 1.0, zr)]);
+      });
+      if (i === ROWS - 1) rr.push([V(d*0.06, py + 1.0, Z0), V(d*0.06, py + 1.0, Z0 + ZLEN)]);
+      makeRods(rr, 0.03, 0xd4dae0, g, { seg: 6, metal: 0.8, rough: 0.3 });
+      g.userData = { wall, d, i, py, zs, pan, back };
+      gTrib.add(g);
+      tribRows.push(g);
+    }
+  });
+  label('Трибуны телескопические: 3 ряда × 2 стороны ≈ 310 мест · боевое положение 2,4 м · проход 1,3 м', V(W - 1.7, FFL + 3.3, ZC), 'tag', gTrib);
+  tribTick = dt => {
+    if (Math.abs(tribTarget - tribCur) < 0.001) return;
+    tribCur += (tribTarget - tribCur) * Math.min(1, dt * 2.5);
+    const ys = 0.3 + 0.7 * tribCur;                  // кресла складываются при сдвигании
+    tribRows.forEach(g => {
+      const u = g.userData;
+      g.position.x = u.wall + u.d * u.i * (0.07 + 0.73 * tribCur);
+      u.zs.forEach((z, k) => {
+        _m.compose(V(u.d*0.52, u.py + 0.24*ys, z), _qq, _ss.set(1, ys, 1));
+        u.pan.setMatrixAt(k, _m);
+        _m.compose(V(u.d*0.30, u.py + 0.42*ys, z), _qq, _ss);
+        u.back.setMatrixAt(k, _m);
+      });
+      u.pan.instanceMatrix.needsUpdate = true;
+      u.back.instanceMatrix.needsUpdate = true;
+    });
+  };
 }
 
 /* ================= МАЧТЫ НАРУЖНОГО ОСВЩЕНИЯ + ПРОЖЕКТОРЫ ================= */
@@ -716,12 +850,19 @@ function applyMode(t){
 }
 document.getElementById('mDay').onclick = () => nightTarget = 0;
 document.getElementById('mNight').onclick = () => nightTarget = 1;
+const tTribBtn = document.getElementById('tTrib');
+tTribBtn.onclick = () => {
+  tribTarget = tribTarget > 0.5 ? 0 : 1;
+  tTribBtn.textContent = tribTarget > 0.5 ? '⇤⇥ Трибуны: раздвинуты' : '⇥⇤ Трибуны: сдвинуты';
+  tTribBtn.className = tribTarget > 0.5 ? 'activeDay' : '';
+};
 
 /* ================= UI ================= */
 document.getElementById('pToggle').onclick = () => document.getElementById('panel').classList.toggle('collapsed');
 const layerMap = {
   'L-frame': ['fnd','slabs','columns','columnsH','roof','nodes','floor','aux'],
   'L-facade': ['facade'], 'L-glass': ['glass'], 'L-ceil': ['ceiling'],
+  'L-trib': ['trib'],
   'L-ent': ['entrance'], 'L-mast': ['masts'], 'L-sky': []
 };
 Object.entries(layerMap).forEach(([id, gnames]) => {
@@ -758,6 +899,7 @@ applyMode(nightCur);
     nightCur += (nightTarget - nightCur) * Math.min(1, dt * 2.2);
     applyMode(nightCur);
   }
+  if (tribTick) tribTick(dt);
   clouds.forEach(s => {
     s.position.x += s.userData.v * dt;
     if (s.position.x > 320) s.position.x = -320;
