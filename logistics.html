@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Логистика: Красноярск → Енисей → Дудинка · спортзал 24×46 м</title>
+<style>
+  html, body { margin:0; padding:0; height:100%; overflow:hidden; font-family:'Segoe UI', system-ui, sans-serif; background:#dfe9f0; }
+  #scene { position:absolute; inset:0; }
+  #labels { position:absolute; inset:0; pointer-events:none; }
+  #panel { position:absolute; top:14px; left:14px; width:322px; max-height:calc(100% - 28px); overflow-y:auto;
+    background:rgba(255,255,255,0.93); border:1px solid #b9c7d2; border-radius:10px;
+    padding:14px 16px; box-shadow:0 4px 18px rgba(30,50,70,0.18); font-size:13px; color:#1e2c38; }
+  #panel h1 { font-size:15px; margin:0 0 2px 0; color:#0e3a5c; }
+  #panel .sub { font-size:11.5px; color:#5a6b78; margin-bottom:10px; }
+  #panel fieldset { border:1px solid #d4dee6; border-radius:7px; margin:0 0 10px 0; padding:7px 9px 8px; }
+  #panel legend { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:#4a6070; padding:0 5px; }
+  #panel label { display:flex; align-items:center; gap:7px; padding:2.5px 0; cursor:pointer; font-size:12.5px; }
+  #panel input[type=checkbox] { accent-color:#0e6aa8; }
+  .sw { display:inline-block; width:11px; height:11px; border-radius:2px; border:1px solid rgba(0,0,0,.25); flex:none; }
+  .views { display:flex; flex-wrap:wrap; gap:5px; }
+  .views button { flex:1 1 45%; padding:5px 4px; font-size:12px; border:1px solid #b9c7d2; border-radius:6px;
+    background:#f2f7fb; color:#16405e; cursor:pointer; }
+  .views button:hover { background:#e2eef7; }
+  #panel .spec { font-size:11.5px; line-height:1.55; color:#33454f; }
+  #panel .spec b { color:#0e3a5c; }
+  #hint { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); font-size:11.5px; color:#48606f;
+          background:rgba(255,255,255,.8); padding:3px 12px; border-radius:12px; border:1px solid #c8d4dd; }
+  .lbl { font:11px 'Segoe UI', system-ui, sans-serif; color:#10344e; background:rgba(255,255,255,.88);
+         padding:1px 6px; border-radius:4px; border:1px solid #b3c3cf; white-space:nowrap; }
+  .lbl.stage { font-weight:600; color:#7a2d0e; border-color:#d9a684; background:rgba(255,246,240,.94); }
+  .lbl.tag { font-weight:600; color:#0e5c2e; border-color:#7fbc94; background:rgba(240,252,244,.92); }
+  .lbl.note { color:#33454f; background:rgba(238,243,247,.92); }
+  .lbl.step { font-weight:700; color:#ffffff; border-color:#c9341f; background:rgba(201,52,31,.94); font-size:13px; padding:3px 10px; }
+  #animBar { position:absolute; bottom:40px; left:50%; transform:translateX(-50%);
+    background:rgba(255,255,255,.93); border:1px solid #b9c7d2; border-radius:10px;
+    padding:9px 14px; display:flex; align-items:center; gap:12px; width:min(680px,72vw);
+    box-shadow:0 4px 18px rgba(30,50,70,.18); font-size:12.5px; color:#1e2c38; }
+  #animBar button { width:40px; height:30px; font-size:13px; border:1px solid #b9c7d2; border-radius:6px;
+    background:#f2f7fb; color:#16405e; cursor:pointer; }
+  #animBar input[type=range] { flex:1; accent-color:#c9341f; }
+  #animBar select { border:1px solid #b9c7d2; border-radius:6px; padding:3px 6px; font-size:12px; color:#16405e; background:#f2f7fb; }
+  #aStage { font-weight:600; color:#7a2d0e; white-space:nowrap; max-width:220px; overflow:hidden; text-overflow:ellipsis; }
+
+/* ---- мобильная адаптация ---- */
+@media (max-width: 640px) {
+  #panel { top:calc(10px + env(safe-area-inset-top)); left:10px; right:10px; width:auto;
+    max-height:30vh; max-height:30dvh; padding:10px 12px; font-size:12px; }
+  #panel.collapsed { max-height:46px; overflow:hidden; }
+  #hint { bottom:calc(8px + env(safe-area-inset-bottom)); font-size:10px; max-width:70vw; }
+  #animBar { bottom:calc(56px + env(safe-area-inset-bottom)); left:10px; right:10px; width:auto;
+    transform:none; padding:7px 10px; }
+  #animBar.on + #hint { display:none; }
+}
+#pToggle { display:none; position:absolute; top:calc(10px + env(safe-area-inset-top)); right:10px; z-index:10;
+  width:40px; height:40px; border-radius:10px; border:1px solid #b9c7d2; background:rgba(255,255,255,.92);
+  font-size:20px; color:#16405e; cursor:pointer; }
+@media (max-width: 640px) { #pToggle { display:block; } }
+
+</style>
+<script type="importmap">
+{ "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="scene"></div>
+<div id="labels"></div>
+<button id="pToggle" title="Скрыть/показать панель">☰</button>
+<div id="panel">
+  <h1>Логистика · Красноярск → Дудинка</h1>
+  <div class="sub">Цепочка поставки конструкций и сэндвич-панелей для спортзала 24×46 м (МАРХИ)</div>
+  <fieldset><legend>Этапы</legend>
+    <label><input type="checkbox" id="S1" checked><span class="sw" style="background:#8a5a2e"></span>1. Завод Красноярск: стержни + узлы</label>
+    <label><input type="checkbox" id="S2" checked><span class="sw" style="background:#2e6f9e"></span>2. Укладка в контейнеры 20 фт + панели</label>
+    <label><input type="checkbox" id="S3" checked><span class="sw" style="background:#c9a227"></span>3. Авто до речного причала</label>
+    <label><input type="checkbox" id="S4" checked><span class="sw" style="background:#3f9e4d"></span>4. Река Енисей, баржа → Дудинка</label>
+    <label><input type="checkbox" id="S5" checked><span class="sw" style="background:#7a5c3e"></span>5. Порт Дудинка: выгрузка</label>
+    <label><input type="checkbox" id="S6" checked><span class="sw" style="background:#b3451f"></span>6. Авто до площадки 84:03:0020005:1840</label>
+    <label><input type="checkbox" id="S7" checked><span class="sw" style="background:#5c2d91"></span>Маршрутная линия + подписи</label>
+  </fieldset>
+  <fieldset><legend>Мультипликация</legend>
+    <label><input type="checkbox" id="S-anim"><span class="sw" style="background:#c9341f"></span>Режим мультипликации цепочки (9 шагов)</label>
+  </fieldset>
+  <fieldset><legend>Виды</legend>
+    <div class="views">
+      <button id="v-iso">Общий вид</button>
+      <button id="v-factory">Завод</button>
+      <button id="v-port">Порт Красноярск</button>
+      <button id="v-dudinka">Дудинка / площадка</button>
+    </div>
+  </fieldset>
+  <div class="spec">
+    <b>Исходные данные:</b><br>
+    Груз: стержни труб Ø60…146 мм дл. 1,5/2/3 м, узлы-коннекторы, болты; сэндвич-панели стен/пола/кровли<br>
+    Упаковка: связанные пакеты стержней + плоские пакеты панелей в контейнеры 20 фт (≈33 м³, грузоподъёмность ~21–28 т)<br>
+    Речной путь: Красноярск → Дудинка ≈ 1 989 км по Енисею, навигация июнь–сентябрь<br>
+    Площадка: земельный участок кадастр. № 84:03:0020005:1840, г. Дудинка (квартал ул. Островского / Станционной)
+  </div>
+</div>
+<div id="animBar" style="display:none">
+  <button id="aPlay">▶</button>
+  <input type="range" id="aTime" min="0" max="900" value="0">
+  <select id="aSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select>
+  <span id="aStage">Шаг 1/9</span>
+</div>
+<div id="hint">Вращение — левая кнопка мыши · масштаб — колесо · сдвиг — правая кнопка · <a href="assembly.html" style="color:#16405e">Мультипликация сборки на площадке →</a></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+/* ============ СЦЕНА ============ */
+const container = document.getElementById('scene');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xdfe9f0);
+scene.fog = new THREE.Fog(0xdfe9f0, 220, 700);
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 2000);
+camera.position.set(-20, 195, 150);
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+container.appendChild(renderer.domElement);
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(innerWidth, innerHeight);
+document.getElementById('labels').appendChild(labelRenderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(10, 0, 6);
+controls.enableDamping = true;
+controls.maxPolarAngle = Math.PI * 0.495;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x9db4c4, 0.9));
+const sun = new THREE.DirectionalLight(0xfff4e0, 1.3);
+sun.position.set(60, 90, -40);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left:-120, right:120, top:120, bottom:-120, far:400 });
+sun.shadow.bias = -0.0006;
+scene.add(sun);
+
+/* ============ ХЕЛПЕРЫ ============ */
+const groups = {};
+function grp(n){ const g = new THREE.Group(); g.name=n; groups[n]=g; scene.add(g); return g; }
+const _up=new THREE.Vector3(0,1,0), _dir=new THREE.Vector3(), _mid=new THREE.Vector3(),
+      _q=new THREE.Quaternion(), _m=new THREE.Matrix4(), _s=new THREE.Vector3();
+function makeRods(list, radius, color, group, opts={}){
+  const geo=new THREE.CylinderGeometry(1,1,1,opts.seg||7);
+  const mat=new THREE.MeshStandardMaterial({color, metalness:opts.metal??0.5, roughness:opts.rough??0.5});
+  const im=new THREE.InstancedMesh(geo,mat,list.length);
+  list.forEach(([a,b],i)=>{
+    _dir.subVectors(b,a); const len=_dir.length();
+    _mid.addVectors(a,b).multiplyScalar(0.5);
+    _q.setFromUnitVectors(_up,_dir.normalize());
+    _s.set(radius,len,radius); _m.compose(_mid,_q,_s); im.setMatrixAt(i,_m);
+  });
+  im.castShadow=true; group.add(im);
+}
+function box(w,h,d,x,y,z,color,group,opts={}){
+  const mat=new THREE.MeshStandardMaterial({color, metalness:opts.metal??0.05, roughness:opts.rough??0.85,
+    transparent:opts.opacity!==undefined&&opts.opacity<1, opacity:opts.opacity??1,
+    side:opts.double?THREE.DoubleSide:THREE.FrontSide});
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+  m.position.set(x,y,z); m.castShadow=opts.shadow!==false; m.receiveShadow=true; group.add(m); return m;
+}
+function label(text,pos,cls,group){
+  const div=document.createElement('div'); div.className='lbl'+(cls?' '+cls:''); div.textContent=text;
+  const o=new CSS2DObject(div); o.position.copy(pos); (group||scene).add(o);
+}
+const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+
+/* ============ РЕЛЬЕФ / ВОДА / ДОРОГА ============ */
+const gBase = grp('base');
+box(340, 0.4, 300, 10, -0.2, 0, 0xcfd8de, gBase, {shadow:false});            // земля
+const river = box(340, 0.25, 46, 10, -0.05, 34, 0x4d7fa8, gBase, {shadow:false, rough:0.35, metal:0.1}); // Енисей
+river.material.transparent = true; river.material.opacity = 0.9;
+
+/* ============ УЗЕЛ 1: ЗАВОД В КРАСНОЯРСКЕ ============ */
+const gFactory = grp('factory');
+{
+  const X=-120, Z=-40;
+  box(34, 0.3, 22, X, 0.15, Z, 0xb9bec4, gFactory);                          // площадка
+  box(20, 7, 12, X-4, 3.5, Z-2, 0x8a5a2e, gFactory, {rough:0.7});            // цех
+  box(20.6, 0.4, 12.6, X-4, 7.2, Z-2, 0x6e4a26, gFactory);                 // кровля
+  box(3.5, 4.5, 0.2, X-10, 2.25, Z-2+6.1, 0x2b4a63, gFactory);             // ворота
+  // стеллажи со стержнями
+  for (let r=0;r<3;r++){
+    const z=Z-8+r*4;
+    box(12, 0.15, 0.9, X+8, 1.0, z, 0x6b7280, gFactory);
+    const rods=[];
+    for(let k=0;k<6;k++) rods.push([V(X+3+k*2, 1.15, z-0.3), V(X+3+k*2, 1.15, z+0.3)]);
+    makeRods(rods, 0.12, 0x3a5f8a, gFactory, {seg:6});
+  }
+  // узлы-коннекторы (ящики)
+  for(let k=0;k<4;k++) box(1.2,0.9,1.2, X+13, 0.45, Z-8+k*3, 0xd97a1e, gFactory);
+  label('1. Завод в Красноярске: нарезка и сварка стержней, узлы-коннекторы, болты', V(X, 9.2, Z), 'stage', gFactory);
+}
+
+/* ============ УЗЕЛ 2: КОНТЕЙНЕРНАЯ ПЛОЩАДКА (20 фт) ============ */
+const gCont = grp('cont');
+{
+  const X=-78, Z=-40;
+  box(30, 0.3, 22, X, 0.15, Z, 0xc3c9cf, gCont);
+  // контейнеры 20 фт: 6.06×2.44×2.59 м (Д×Ш×В). В сцене длина вдоль X.
+  const cont = (x,z,c)=>{ box(6.06,2.59,2.44, x, 1.3, z, c, gCont, {rough:0.55, metal:0.25}); };
+  cont(X-8, Z-4, 0x2e6f9e); cont(X-8, Z-1.2, 0x3f9e4d); cont(X-8, Z+1.6, 0xb3451f);
+  cont(X,   Z-4, 0x7a5c3e); cont(X,   Z-1.2, 0x5c2d91); cont(X,   Z+1.6, 0x2e6f9e);
+  // раскрытый контейнер: видны пакеты стержней и панели
+  const ox=X+8, oz=Z-1;
+  box(6.06,0.12,2.44, ox, 0.06, oz, 0x8a94a0, gCont);                       // пол
+  box(6.06,0.12,2.44, ox, 2.53, oz, 0x8a94a0, gCont);                       // крыша
+  box(0.12,2.59,2.44, ox-3.0, 1.3, oz, 0x8a94a0, gCont);                    // торец
+  box(6.06,2.59,0.12, ox, 1.3, oz-1.22, 0x8a94a0, gCont);                   // стенка
+  const rods=[]; for(let k=0;k<8;k++) rods.push([V(ox-2.6+k*0.65, 0.35, oz-0.9), V(ox-2.6+k*0.65, 0.35, oz+0.9)]);
+  makeRods(rods, 0.09, 0x3a5f8a, gCont, {seg:6});                            // пакет стержней
+  box(5.4, 1.4, 0.9, ox, 1.4, oz+0.5, 0xd6e7f2, gCont, {rough:0.6});         // пакет сэндвич-панелей
+  label('2. Укладка в контейнеры 20 фт: стержни пакетами + сэндвич-панели', V(X, 4.6, Z), 'stage', gCont);
+}
+
+/* ============ УЗЕЛ 3: АВТО ДО ПРИЧАЛА ============ */
+const gTruck1 = grp('truck1');
+{
+  // дорога от завода к причалу
+  const pts=[V(-100,0.05,-28), V(-70,0.05,-20), V(-40,0.05,-6), V(-10,0.05,8)];
+  const curve=new THREE.CatmullRomCurve3(pts);
+  const geo=new THREE.TubeGeometry(curve, 40, 1.6, 8, false);
+  const road=new THREE.Mesh(geo, new THREE.MeshStandardMaterial({color:0x6b7280, roughness:0.9}));
+  road.scale.y=0.12; road.position.y=0.02; road.receiveShadow=true; gTruck1.add(road);
+  // тягач + полуприцеп с контейнером
+  const t=V(-52,0,-14);
+  box(2.4,2.8,2.2, t.x, 1.5, t.z, 0xc9a227, gTruck1, {metal:0.3, rough:0.5});       // кабина
+  box(7.5,0.5,2.3, t.x+5.2, 0.55, t.z, 0x555f6b, gTruck1, {metal:0.4, rough:0.5});  // рама
+  box(6.06,2.59,2.44, t.x+5.4, 2.0, t.z, 0x2e6f9e, gTruck1, {metal:0.25, rough:0.55}); // контейнер
+  [-1.1,1.1].forEach(s=>{ box(0.5,0.9,0.9, t.x+1.2, 0.45, t.z+s*1.1, 0x222831, gTruck1);
+                          box(0.5,0.9,0.9, t.x+8.2, 0.45, t.z+s*1.1, 0x222831, gTruck1); });
+  label('3. Автотранспорт: завод → речной причал Красноярск', V(-52, 4.4, -14), 'stage', gTruck1);
+}
+
+/* ============ УЗЕЛ 4: ПРИЧАЛ КРАСНОЯРСК + БАРЖА ============ */
+const gPort = grp('port');
+{
+  const X=-6, Z=10;
+  box(26, 0.35, 10, X, 0.18, Z, 0xb9bec4, gPort);                          // причал
+  // портальный кран
+  const crane=(x)=>{ makeRods([[V(x-2.2,0,Z-2),V(x-2.2,7,Z-2)],[V(x+2.2,0,Z-2),V(x+2.2,7,Z-2)],
+    [V(x-2.2,7,Z-2),V(x+2.2,7,Z-2)]],0.12,0xc96a3b,gPort,{seg:6});
+    box(1.2,0.8,1.0, x, 7.4, Z-2, 0xc96a3b, gPort); };
+  crane(X-6); crane(X+6);
+  // баржа с контейнерами
+  const bx=X, bz=Z+16;
+  box(34, 1.6, 9, bx, 0.6, bz, 0x5c6b7a, gPort, {metal:0.3, rough:0.6});    // корпус баржи
+  box(34.6, 0.2, 9.6, bx, 1.45, bz, 0x47525e, gPort);                       // палуба
+  const bc=[0x2e6f9e,0x3f9e4d,0xb3451f,0x7a5c3e,0x5c2d91,0x2e6f9e];
+  bc.forEach((c,i)=> box(6.06,2.59,2.44, bx-13+i*5.2, 2.9, bz-1.6, c, gPort, {metal:0.25, rough:0.55}));
+  bc.forEach((c,i)=> box(6.06,2.59,2.44, bx-13+i*5.2, 2.9, bz+1.4, c, gPort, {metal:0.25, rough:0.55}));
+  // буксир
+  box(7,2.2,4, bx+20, 1.1, bz, 0x37414c, gPort, {metal:0.3, rough:0.6});
+  box(3,2.2,2.6, bx+21, 3.3, bz, 0xdde3e8, gPort);
+  label('4. Речной причал Красноярск → баржа по Енисею ≈ 1 989 км до Дудинки', V(X, 9.4, Z+12), 'stage', gPort);
+}
+
+/* ============ УЗЕЛ 5: ПОРТ ДУДИНКА (ВЫГРУЗКА) ============ */
+const gDud = grp('dudinka');
+{
+  const X=70, Z=10;
+  box(28, 0.35, 12, X, 0.18, Z, 0xb9bec4, gDud);
+  box(1.0, 6, 1.0, X-8, 3, Z-3, 0xc96a3b, gDud);                            // кран
+  makeRods([[V(X-8,6,Z-3), V(X-1,6,Z-3)]], 0.1, 0xc96a3b, gDud);
+  box(3.5,0.3,1.2, X-2.5, 5.8, Z-3, 0xc96a3b, gDud);                        // стрела
+  // склад временного хранения
+  box(12, 4, 7, X+8, 2, Z-1, 0x7a8c5a, gDud, {rough:0.75});
+  box(12.6, 0.3, 7.6, X+8, 4.2, Z-1, 0x5d6b43, gDud);
+  // выгруженные контейнеры
+  [0,1,2].forEach(i=> box(6.06,2.59,2.44, X-2+i*6.6, 1.3, Z+3.2, [0x2e6f9e,0x3f9e4d,0xb3451f][i], gDud, {metal:0.25, rough:0.55}));
+  label('5. Порт Дудинка: выгрузка краном, временное хранение', V(X, 7.6, Z+2), 'stage', gDud);
+}
+
+/* ============ УЗЕЛ 6: ДОРОГА ДО ПЛОЩАДКИ + СТРОЙПЛОЩАДКА ============ */
+const gSite = grp('site');
+{
+  // дорога Дудинка → участок
+  const pts=[V(84,0.05,4), V(104,0.05,-8), V(122,0.05,-20), V(138,0.05,-30)];
+  const curve=new THREE.CatmullRomCurve3(pts);
+  const road=new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 1.6, 8, false),
+    new THREE.MeshStandardMaterial({color:0x6b7280, roughness:0.9}));
+  road.scale.y=0.12; road.position.y=0.02; road.receiveShadow=true; gSite.add(road);
+  // грузовик с контейнером у площадки
+  const t=V(116,0,-16);
+  box(2.4,2.8,2.2, t.x, 1.5, t.z, 0xc9a227, gSite, {metal:0.3, rough:0.5});
+  box(7.5,0.5,2.3, t.x+5.2, 0.55, t.z, 0x555f6b, gSite, {metal:0.4, rough:0.5});
+  box(6.06,2.59,2.44, t.x+5.4, 2.0, t.z, 0x3f9e4d, gSite, {metal:0.25, rough:0.55});
+  [-1.1,1.1].forEach(s=>{ box(0.5,0.9,0.9, t.x+1.2, 0.45, t.z+s*1.1, 0x222831, gSite);
+                          box(0.5,0.9,0.9, t.x+8.2, 0.45, t.z+s*1.1, 0x222831, gSite); });
+
+  // стройплощадка 84:03:0020005:1840
+  const X=142, Z=-34;
+  box(40, 0.25, 30, X, 0.13, Z, 0xd9d2c2, gSite);                           // участок
+  // контур здания 27×48 (пятно фундамента)
+  const edge=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints([
+    V(X-13.5,0.3,Z-24), V(X+13.5,0.3,Z-24), V(X+13.5,0.3,Z+24), V(X-13.5,0.3,Z+24)]),
+    new THREE.LineBasicMaterial({color:0xb3451f}));
+  gSite.add(edge);
+  // уже смонтированный фрагмент: плиты + пространственный фундамент (мини)
+  for(let i=0;i<6;i++) box(1.2,0.12,48, X-13.5+1.5+i*3, 0.31, Z, 0xb9bec4, gSite, {rough:0.95});
+  // бытовой городок
+  box(6,2.6,2.4, X+12, 1.3, Z+10, 0x7a8c5a, gSite);
+  box(6,2.6,2.4, X+12, 1.3, Z+13.2, 0x5c2d91, gSite);
+  // кран на площадке
+  makeRods([[V(X-16,0,Z+8),V(X-16,10,Z+8)],[V(X-16,10,Z+8),V(X-8,10,Z+8)]],0.12,0xc96a3b,gSite,{seg:6});
+  label('6. Площадка: земельный участок кадастр. № 84:03:0020005:1840, г. Дудинка', V(X, 6.4, Z), 'stage', gSite);
+}
+
+/* ============ ОБЪЕКТЫ МУЛЬТИПЛИКАЦИИ ============ */
+const gBuild = grp('build');  // каскадная сборка здания на участке (шаг 9)
+let gRig1=null, gRig2=null, gBargeAnim=null, gHook=null, gLiftC=null, stepLbl=null;
+const buildParts=[];
+{
+  const X=142, Z=-34;   // стройплощадка
+  const cell=(w,h,d,x,y,z,c,g)=>{const m=box(w,h,d,x,y,z,c,g);buildParts.push(m);m.visible=false;return m};
+  for(let i=0;i<6;i++) cell(1.2,0.12,48, X-13.5+1.5+i*3, 0.31, Z, 0x9aa2ab, gBuild);          // ж/б плиты
+  const cg=0x8a6a45;
+  const fx=[],fz=[];for(let x=-13.5;x<=13.5;x+=4.5)fx.push(x);for(let z=-24;z<=24;z+=6)fz.push(z);
+  const rods=[];
+  fx.forEach((x,i)=>fz.forEach((z,j)=>{ if(i<fx.length-1)rods.push([V(X+x,0.4,Z+z),V(X+fx[i+1],0.4,Z+z)]);
+    if(j<fz.length-1)rods.push([V(X+x,0.4,Z+z),V(X+x,0.4,Z+fz[j+1])]); }));
+  const grid=new THREE.Group(); makeRods(rods,0.08,cg,grid,{seg:5}); gBuild.add(grid); buildParts.push(grid); grid.visible=false;
+  // колонны по периметру
+  const cols=[];[-13.5,0,13.5].forEach(cx=>[-24,-12,0,12,24].forEach(cz=>cols.push([V(X+cx,0.4,Z+cz),V(X+cx,7.4,Z+cz)])));
+  const colm=new THREE.Group(); makeRods(cols,0.14,0x2b4a63,colm,{seg:6}); gBuild.add(colm); buildParts.push(colm); colm.visible=false;
+  // плита покрытия (условно тонкая панель-диск)
+  const roof=cell(27.6,0.5,48.6, X, 7.7, Z, 0x35807a, gBuild); roof.material.transparent=true; roof.material.opacity=0.55;
+  // ограждение
+  const wall=cell(27.0,6.4,48.0, X, 3.9, Z, 0xd6e7f2, gBuild); wall.material.transparent=true; wall.material.opacity=0.32; wall.material.side=THREE.DoubleSide;
+}
+{
+  // тягач 1 (завод→причал), пустая рама
+  gRig1=new THREE.Group();
+  box(2.4,2.8,2.2, 0,1.5,0, 0xc9a227,gRig1,{metal:0.3,rough:0.5});
+  box(7.5,0.5,2.3, 5.2,0.55,0, 0x555f6b,gRig1,{metal:0.4,rough:0.5});
+  [-1.1,1.1].forEach(sg=>{box(0.5,0.9,0.9,1.2,0.45,sg*1.1,0x222831,gRig1);box(0.5,0.9,0.9,8.2,0.45,sg*1.1,0x222831,gRig1)});
+  gRig1.visible=false; scene.add(gRig1);
+  // тягач 2 (Дудинка→площадка) с контейнером
+  gRig2=gRig1.clone(); box(6.06,2.59,2.44, 5.4,2.0,0, 0x3f9e4d,gRig2,{metal:0.25,rough:0.55}); gRig2.visible=false; scene.add(gRig2);
+  // баржа с буксиром
+  gBargeAnim=new THREE.Group();
+  box(34,1.6,9, 0,0.6,0, 0x5c6b7a,gBargeAnim,{metal:0.3,rough:0.6});
+  box(34.6,0.2,9.6, 0,1.45,0, 0x47525e,gBargeAnim);
+  const bc=[0x2e6f9e,0x3f9e4d,0xb3451f,0x7a5c3e,0x5c2d91,0x2e6f9e];
+  bc.forEach((c,i)=> box(6.06,2.59,2.44, -13+i*5.2, 2.9, -1.6, c, gBargeAnim,{metal:0.25,rough:0.55}));
+  bc.forEach((c,i)=> box(6.06,2.59,2.44, -13+i*5.2, 2.9, 1.4, c, gBargeAnim,{metal:0.25,rough:0.55}));
+  box(7,2.2,4, 20,1.1,0, 0x37414c,gBargeAnim,{metal:0.3,rough:0.6});
+  box(3,2.2,2.6, 21,3.3,0, 0xdde3e8,gBargeAnim);
+  gBargeAnim.visible=false; scene.add(gBargeAnim);
+  // переносимый контейнер (погрузка/выгрузка)
+  gLiftC=new THREE.Group(); box(6.06,2.59,2.44, 0,0,0, 0xb3451f,gLiftC,{metal:0.25,rough:0.55});
+  gLiftC.visible=false; scene.add(gLiftC);
+  // крюк кранов
+  gHook=new THREE.Group(); makeRods([[V(0,0,0),V(0,2.2,0)]],0.05,0x222831,gHook,{seg:5});
+  gHook.visible=false; scene.add(gHook);
+  // подпись текущего шага
+  const d=document.createElement('div'); d.className='lbl step'; d.textContent='';
+  stepLbl=new CSS2DObject(d); stepLbl.position.set(10,16,0); scene.add(stepLbl); stepLbl.visible=false;
+}
+
+/* ============ МАРШРУТНАЯ ЛИНИЯ ============ */
+const gRoute = grp('route');
+{
+  const pts=[V(-120,2.5,-40), V(-78,2.5,-40), V(-52,2.0,-14), V(-6,3.0,10), V(10,2.0,26), V(40,2.0,28), V(70,3.0,10), V(116,2.0,-16), V(142,3.0,-34)];
+  const curve=new THREE.CatmullRomCurve3(pts);
+  const line=new THREE.Mesh(new THREE.TubeGeometry(curve, 220, 0.22, 8, false),
+    new THREE.MeshStandardMaterial({color:0xc9341f, roughness:0.4, metalness:0.1}));
+  gRoute.add(line);
+  // точки этапов
+  pts.forEach((p,i)=>{
+    const s=new THREE.Mesh(new THREE.SphereGeometry(0.7,14,10),
+      new THREE.MeshStandardMaterial({color:0xc9341f, roughness:0.4}));
+    s.position.copy(p); gRoute.add(s);
+    label(String(i+1), V(p.x, p.y+1.4, p.z), 'stage', gRoute);
+  });
+  label('≈ 1 989 км по Енисею', V(30, 3.6, 30), 'tag', gRoute);
+}
+
+/* ============ МУЛЬТИПЛИКАЦИЯ ЦЕПОЧКИ ============ */
+const road1=new THREE.CatmullRomCurve3([V(-100,0.05,-28),V(-70,0.05,-20),V(-40,0.05,-6),V(-10,0.05,8)]);
+const riverC=new THREE.CatmullRomCurve3([V(-6,0.9,26),V(10,0.9,34),V(40,0.9,32),V(70,0.9,26)]);
+const road2=new THREE.CatmullRomCurve3([V(84,0.05,4),V(104,0.05,-8),V(122,0.05,-20),V(138,0.05,-30)]);
+function place(g,curve,u,dy){ u=THREE.MathUtils.clamp(u,0,1);
+  const p=curve.getPointAt(u), t=curve.getTangentAt(u);
+  g.position.set(p.x,(dy??0)+p.y,p.z); g.rotation.y=Math.atan2(t.x,t.z)-Math.PI/2; }
+const STEPS=[
+ {t:0.00, txt:'1 · Завод Красноярск: нарезка стержней, узлы-коннекторы', cam:[[-150,26,-76],[-112,2,-40]], lbl:V(-124,12,-40)},
+ {t:0.12, txt:'2 · Упаковка в контейнеры 20 фт: стержни + сэндвич-панели', cam:[[-70,20,-78],[-74,1,-40]], lbl:V(-82,7,-40)},
+ {t:0.24, txt:'3 · Авто: завод → речной причал Красноярска', cam:[[-78,30,-52],[-50,1,-10]], lbl:V(-52,7,-14)},
+ {t:0.38, txt:'4 · Портальный кран: контейнер на баржу', cam:[[-46,26,-26],[0,3,18]], lbl:V(-2,11,12)},
+ {t:0.50, txt:'5 · Баржа по Енисею ≈ 1 989 км до Дудинки', cam:[[-4,72,104],[34,1,28]], lbl:V(30,9,32)},
+ {t:0.66, txt:'6 · Порт Дудинка: кран выгружает контейнеры', cam:[[30,34,-22],[66,3,14]], lbl:V(70,10,10)},
+ {t:0.78, txt:'7 · Авто: порт Дудинка → площадка 84:03:0020005:1840', cam:[[96,26,16],[114,1,-14]], lbl:V(116,7,-16)},
+ {t:0.88, txt:'8 · Разгрузка на стройплощадке', cam:[[172,22,-4],[142,2,-34]], lbl:V(142,9,-34)},
+ {t:0.94, txt:'9 · Каскадная сборка здания (плиты → фундамент → колонны → покрытие → ограждение)', cam:[[178,30,2],[142,3,-34]], lbl:V(142,12,-34)},
+];
+const A={on:false, t:0, play:false, speed:1};
+const aBar=document.getElementById('animBar'), aTime=document.getElementById('aTime'),
+      aPlayB=document.getElementById('aPlay'), aSpeed=document.getElementById('aSpeed'), aStageEl=document.getElementById('aStage');
+document.getElementById('S-anim').addEventListener('change', e=>{
+  A.on=e.target.checked; aBar.style.display=A.on?'flex':'none'; aBar.classList.toggle('on',A.on);
+  if(!A.on){ A.play=false; aPlayB.textContent='▶';
+    [gRig1,gRig2,gBargeAnim,gHook,gLiftC].forEach(g=>g.visible=false);
+    buildParts.forEach(m=>m.visible=false); stepLbl.visible=false; gBuild.visible=true; }
+});
+aPlayB.onclick=()=>{ A.play=!A.play; aPlayB.textContent=A.play?'⏸':'▶'; };
+aTime.addEventListener('input',()=>{ A.t=aTime.value/900; });
+aSpeed.onchange=()=>{ A.speed=parseFloat(aSpeed.value); };
+function animFrame(dt){
+  if(A.play){ A.t+=dt*0.04*A.speed; if(A.t>=1.02){A.t=0;} aTime.value=Math.round(A.t*900); }
+  const t=A.t;
+  const lerpCam=(u0,u1,c0,c1)=>{ const u=THREE.MathUtils.clamp((t-u0)/(u1-u0),0,1);
+    camera.position.set(c0[0]+(c1[0]-c0[0])*u, c0[1]+(c1[1]-c0[1])*u, c0[2]+(c1[2]-c0[2])*u);
+    controls.target.set(c0[3]+(c1[3]-c0[3])*u, c0[4]+(c1[4]-c0[4])*u, c0[5]+(c1[5]-c0[5])*u); };
+  let cur=STEPS[0]; for(const st of STEPS) if(t>=st.t) cur=st;
+  stepLbl.visible=A.on; stepLbl.element.textContent=cur.txt; stepLbl.position.copy(cur.lbl);
+  aStageEl.textContent=`Шаг ${STEPS.indexOf(cur)+1}/9 · ${Math.round(t*100)}%`;
+  const ci=STEPS.indexOf(cur), cn=STEPS[Math.min(ci+1,STEPS.length-1)];
+  const flat=c=>[...c[0],...c[1]];
+  lerpCam(cur.t, cn.t===cur.t?cur.t+0.01:cn.t, flat(cur.cam), flat(cn.cam));
+  // шаг 3: тягач по дороге
+  const u3=THREE.MathUtils.clamp((t-0.24)/(0.38-0.24),0,1);
+  gRig1.visible=A.on&&u3>0&&u3<1; if(gRig1.visible) place(gRig1,road1,u3,0.5);
+  // шаг 4: кран поднимает контейнер на баржу
+  const u4=THREE.MathUtils.clamp((t-0.38)/(0.50-0.38),0,1);
+  const craneOn=A.on&&t>=0.38&&t<0.50;
+  gHook.visible=craneOn; gLiftC.visible=craneOn;
+  if(craneOn){ const px=-10, pz=14;
+    const cx=px+(u4<0.5?u4*2*14:(1-u4)*2*14), cy=8-Math.sin(u4*Math.PI)*5.6;
+    gHook.position.set(cx,cy,pz); gLiftC.position.set(cx,cy-1.6,pz); }
+  // шаг 5: баржа по реке
+  const u5=THREE.MathUtils.clamp((t-0.50)/(0.66-0.50),0,1);
+  gBargeAnim.visible=A.on&&u5>0&&u5<1; if(gBargeAnim.visible) place(gBargeAnim,riverC,u5,0.55);
+  // шаг 7: тягач 2 по дороге
+  const u7=THREE.MathUtils.clamp((t-0.78)/(0.88-0.78),0,1);
+  gRig2.visible=A.on&&u7>0&&u7<1; if(gRig2.visible) place(gRig2,road2,u7,0.5);
+  // шаг 9: каскадная сборка
+  gBuild.visible=A.on&&t>=0.90;
+  const u9=THREE.MathUtils.clamp((t-0.90)/0.10,0,1);
+  const n=Math.floor(u9*(buildParts.length+0.999));
+  buildParts.forEach((m,i)=>m.visible=i<n&&A.on&&t>=0.90);
+}
+
+/* ============ UI ============ */
+document.getElementById('pToggle').onclick=()=>{document.getElementById('panel').classList.toggle('collapsed')};
+const layerMap={'S1':'factory','S2':'cont','S3':'truck1','S4':'port','S5':'dudinka','S6':'site','S7':'route'};
+Object.entries(layerMap).forEach(([id,g])=>{
+  document.getElementById(id).addEventListener('change', e=>{ groups[g].visible=e.target.checked; });
+});
+function setView(px,py,pz,tx,ty,tz){ camera.position.set(px,py,pz); controls.target.set(tx,ty,tz); }
+document.getElementById('v-iso').onclick    = ()=>setView(-90,55,-70, 10,4,10);
+document.getElementById('v-factory').onclick= ()=>setView(-150,25,-75, -99,2,-40);
+document.getElementById('v-port').onclick   = ()=>setView(-35,22,-25, -6,3,16);
+document.getElementById('v-dudinka').onclick= ()=>setView(45,26,30, 106,2,-12);
+
+addEventListener('resize', ()=>{
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight); labelRenderer.setSize(innerWidth, innerHeight);
+});
+const _clk=new THREE.Clock();
+(function animate(){ requestAnimationFrame(animate); const dt=_clk.getDelta(); if(A.on) animFrame(dt);
+  controls.update(); renderer.render(scene,camera); labelRenderer.render(scene,camera); })();
+</script>
+</body>
+</html>
