@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Спортзал 24×46 м для Арктической зоны — концепт v2 (МАРХИ, фундамент-зеркало)</title>
+<style>
+  html, body { margin:0; padding:0; height:100%; overflow:hidden; font-family:'Segoe UI', system-ui, sans-serif; background:#dfe9f0; }
+  #scene { position:absolute; inset:0; }
+  #labels { position:absolute; inset:0; pointer-events:none; }
+  #panel { position:absolute; top:14px; left:14px; width:308px; max-height:calc(100% - 28px); overflow-y:auto;
+    background:rgba(255,255,255,0.92); border:1px solid #b9c7d2; border-radius:10px;
+    padding:14px 16px; box-shadow:0 4px 18px rgba(30,50,70,0.18); font-size:13px; color:#1e2c38; }
+  #panel h1 { font-size:15px; margin:0 0 2px 0; color:#0e3a5c; }
+  #panel .sub { font-size:11.5px; color:#5a6b78; margin-bottom:10px; }
+  #panel fieldset { border:1px solid #d4dee6; border-radius:7px; margin:0 0 10px 0; padding:7px 9px 8px; }
+  #panel legend { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:#4a6070; padding:0 5px; }
+  #panel label { display:flex; align-items:center; gap:7px; padding:2.5px 0; cursor:pointer; font-size:12.5px; }
+  #panel input[type=checkbox] { accent-color:#0e6aa8; }
+  .sw { display:inline-block; width:11px; height:11px; border-radius:2px; border:1px solid rgba(0,0,0,.25); flex:none; }
+  .views { display:flex; flex-wrap:wrap; gap:5px; }
+  .views button { flex:1 1 45%; padding:5px 4px; font-size:12px; border:1px solid #b9c7d2; border-radius:6px;
+    background:#f2f7fb; color:#16405e; cursor:pointer; }
+  .views button:hover { background:#e2eef7; }
+  #panel .spec { font-size:11.5px; line-height:1.55; color:#33454f; }
+  #panel .spec b { color:#0e3a5c; }
+  #hint { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); font-size:11.5px; color:#48606f;
+          background:rgba(255,255,255,.8); padding:3px 12px; border-radius:12px; border:1px solid #c8d4dd; }
+  .lbl { font:11px 'Segoe UI', system-ui, sans-serif; color:#10344e; background:rgba(255,255,255,.85);
+         padding:1px 6px; border-radius:4px; border:1px solid #b3c3cf; white-space:nowrap; }
+  .lbl.dim { color:#7a2d0e; border-color:#d9a684; background:rgba(255,246,240,.9); font-weight:600; }
+  .lbl.axis { width:20px; height:20px; border-radius:50%; text-align:center; line-height:20px; padding:0;
+              font-weight:600; color:#5c2d91; border:1.5px solid #8d6bb8; background:rgba(248,244,255,.92); }
+  .lbl.tag { font-weight:600; color:#0e5c2e; border-color:#7fbc94; background:rgba(240,252,244,.92); }
+
+/* ---- мобильная адаптация (safe-area, без перекрытий) ---- */
+@media (max-width: 640px) {
+  #panel { top:calc(10px + env(safe-area-inset-top)); left:10px; right:10px; width:auto;
+    max-height:38vh; max-height:38dvh; padding:10px 12px; font-size:12px; }
+  #panel.collapsed { max-height:46px; overflow:hidden; }
+  #hint { bottom:calc(8px + env(safe-area-inset-bottom)); font-size:10px; padding:2px 8px; max-width:90vw; }
+  .views button { flex:1 1 30%; font-size:11px; }
+}
+#pToggle { display:none; position:absolute; top:calc(10px + env(safe-area-inset-top)); right:10px; z-index:10;
+  width:40px; height:40px; border-radius:10px; border:1px solid #b9c7d2; background:rgba(255,255,255,.92);
+  font-size:20px; color:#16405e; cursor:pointer; }
+@media (max-width: 640px) { #pToggle { display:block; } }
+
+</style>
+<script type="importmap">
+{ "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="scene"></div>
+<div id="labels"></div>
+<button id="pToggle" title="Скрыть/показать панель">☰</button>
+<div id="panel">
+  <h1>Спортзал 24 × 46 м — Арктика</h1>
+  <div class="sub">Концепт-схема v2 · пространственный фундамент-«зеркало» + вспарушенное покрытие ПСПК «МАРХИ»</div>
+  <fieldset><legend>Слои модели</legend>
+    <label><input type="checkbox" id="L-ground" checked><span class="sw" style="background:#c9b99a"></span>Подготовка площадки</label>
+    <label><input type="checkbox" id="L-slabs" checked><span class="sw" style="background:#b9bec4"></span>Ж/б плиты-ленты 120 мм, ш. 1,2 м</label>
+    <label><input type="checkbox" id="L-fnd" checked><span class="sw" style="background:#9a7b52"></span>Простр. фундамент h=2,12 (зеркало покрытия)</label>
+    <label><input type="checkbox" id="L-floor" checked><span class="sw" style="background:#ded8c8"></span>Пол — сэндвич-панели по верхнему поясу</label>
+    <label><input type="checkbox" id="L-columns" checked><span class="sw" style="background:#3a5f8a"></span>Колонны △700, шаг 6 м</label>
+    <label><input type="checkbox" id="L-columnsH" checked><span class="sw" style="background:#2b3f5c"></span>Усиленные колонны △1200 (углы + через одну)</label>
+    <label><input type="checkbox" id="L-roof" checked><span class="sw" style="background:#2e6f9e"></span>Покрытие ПСПК + вспарушивание f=0,9</label>
+    <label><input type="checkbox" id="L-nodes" checked><span class="sw" style="background:#d97a1e"></span>Узлы-коннекторы (одноболтовые)</label>
+    <label><input type="checkbox" id="L-panels" checked><span class="sw" style="background:#cfe4f2"></span>Ограждение — сэндвич-панели изнутри</label>
+    <label><input type="checkbox" id="L-aux" checked><span class="sw" style="background:#7a8c5a"></span>Вспом. блок 5×24 м, 3 эт. + лестница</label>
+    <label><input type="checkbox" id="L-auxInt" checked><span class="sw" style="background:#9aa4ad"></span>Планировка вспом. блока (поэтажно)</label>
+    <label><input type="checkbox" id="L-shields" checked><span class="sw" style="background:#b8c8d4"></span>Щиты подполья (ветро-снегозащита, зазор 350)</label>
+    <label><input type="checkbox" id="L-ent" checked><span class="sw" style="background:#d97a1e"></span>Входная группа: навес, площадка, лестница, МАФ, флагштоки</label>
+    <label><input type="checkbox" id="L-field" checked><span class="sw" style="background:#3f9e4d"></span>Поле мини-футбол 38×19 м</label>
+    <label><input type="checkbox" id="L-dims" checked><span class="sw" style="background:#c96a3b"></span>Оси и размеры</label>
+  </fieldset>
+  <fieldset><legend>Виды</legend>
+    <div class="views">
+      <button id="v-iso">Общий вид</button>
+      <button id="v-plan">План</button>
+      <button id="v-front">Фасад</button>
+      <button id="v-in">Внутри зала</button>
+      <button id="v-aux">Вспом. блок</button>
+      <button id="v-ent">Входная группа</button>
+    </div>
+  </fieldset>
+  <div class="spec">
+    <b>Схема v2:</b><br>
+    Единое покрытие ПСПК на весь план 24×46 м, вспарушивание f = 0,9 м (f/l ≈ 1/27)<br>
+    Пространственный фундамент — зеркало покрытия: h = 2,12 м, выпуск за оси 1,5 м (бока) / 1,0 м (торцы), пятно 27×48 м<br>
+    Пол — сэндвич-панели по верхнему поясу фундамента, отм. чистого пола +2,400<br>
+    Проветриваемое подполье 2,12 м — отсечка тепла от мерзлого грунта<br>
+    Колонны △700: +2,400 … +12,400, шаг 6 м<br>
+    Вспом. блок 3 этажа по 3,2 м под общим покрытием; вход по наружной лестнице<br>
+    Стены — сэндвич-панели с внутренней стороны каркаса<br>
+    <a href="logistics.html" style="color:#0e6aa8">Модель логистики Красноярск → Дудинка</a> · <a href="assembly.html" style="color:#0e6aa8">Мультипликация сборки</a> · <a href="node.html" style="color:#0e6aa8">Узел МАРХИ</a> · <a href="drawings.html" style="color:#0e6aa8">Чертежи</a> · <a href="calc.html" style="color:#0e6aa8">Расчётная схема</a>
+  </div>
+</div>
+<div id="hint">Вращение — левая кнопка мыши · масштаб — колесо · сдвиг — правая кнопка</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+/* ================= ПАРАМЕТРЫ (м) ================= */
+const W = 24, L = 46, AUX = 5;
+const MOD = 3.0;
+const SLAB_T = 0.12, SLAB_W = 1.2;
+const FND_D = MOD / Math.SQRT2;            // 2.1213 — глубина фундамента (зеркало покрытия)
+const FND_BOT = SLAB_T;                    // 0.12  — низ фундамента (по плитам)
+const FND_TOP = FND_BOT + FND_D;           // 2.241 — верхний пояс фундамента
+const FLR_T = 0.16;                        // сэндвич-панель пола
+const FFL = FND_TOP + FLR_T;               // 2.401 — чистый пол
+const COL_H = 10.0;
+const ROOF_BOT = FFL + COL_H;              // 12.401 — низ покрытия (по опорам)
+const ROOF_D = FND_D;                      // 2.121 — глубина покрытия
+const ARCH_F = 0.9;                        // стрелка вспарушивания (f/l ≈ 1/27)
+const TRI = 0.7, TRI_R = TRI / Math.sqrt(3);
+const TRI_H = 1.2, TRI_HR = TRI_H / Math.sqrt(3);   // усиленные колонны △1200
+const OX = 1.5, OZ = 1.0;                  // выпуски фундамента за оси
+
+const archY = x => { const n = (x - W/2)/(W/2); return ARCH_F * (1 - n*n); };
+const yB = x => ROOF_BOT + archY(x);       // низ покрытия
+const yT = x => yB(x) + ROOF_D;            // верх покрытия
+
+/* ================= СЦЕНА ================= */
+const container = document.getElementById('scene');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xdfe9f0);
+scene.fog = new THREE.Fog(0xdfe9f0, 150, 450);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 1000);
+camera.position.set(-40, 30, -32);
+
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+container.appendChild(renderer.domElement);
+
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(innerWidth, innerHeight);
+document.getElementById('labels').appendChild(labelRenderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(W/2, 6, L/2);
+controls.enableDamping = true;
+controls.maxPolarAngle = Math.PI * 0.495;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x9db4c4, 0.95));
+const sun = new THREE.DirectionalLight(0xfff4e0, 1.35);
+sun.position.set(45, 75, -35);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left:-50, right:50, top:60, bottom:-60, far:240 });
+sun.shadow.bias = -0.0006;
+scene.add(sun);
+
+/* ================= ХЕЛПЕРЫ ================= */
+const groups = {};
+function grp(name){ const g = new THREE.Group(); g.name = name; groups[name] = g; scene.add(g); return g; }
+const _up = new THREE.Vector3(0,1,0), _dir = new THREE.Vector3(), _mid = new THREE.Vector3(),
+      _q = new THREE.Quaternion(), _m = new THREE.Matrix4(), _s = new THREE.Vector3();
+function makeRods(list, radius, color, group, opts={}){
+  const geo = new THREE.CylinderGeometry(1, 1, 1, opts.seg || 7);
+  const mat = new THREE.MeshStandardMaterial({ color, metalness: opts.metal ?? 0.55, roughness: opts.rough ?? 0.45 });
+  const im = new THREE.InstancedMesh(geo, mat, list.length);
+  list.forEach(([a,b], i) => {
+    _dir.subVectors(b, a);
+    const len = _dir.length();
+    _mid.addVectors(a, b).multiplyScalar(0.5);
+    _q.setFromUnitVectors(_up, _dir.normalize());
+    _s.set(radius, len, radius);
+    _m.compose(_mid, _q, _s);
+    im.setMatrixAt(i, _m);
+  });
+  im.castShadow = true;
+  group.add(im);
+}
+function makeNodes(list, radius, color, group){
+  const geo = new THREE.SphereGeometry(1, 12, 9);
+  const mat = new THREE.MeshStandardMaterial({ color, metalness: 0.35, roughness: 0.5 });
+  const im = new THREE.InstancedMesh(geo, mat, list.length);
+  list.forEach((p, i) => {
+    _m.compose(p, new THREE.Quaternion(), new THREE.Vector3(radius, radius, radius));
+    im.setMatrixAt(i, _m);
+  });
+  im.castShadow = true;
+  group.add(im);
+}
+function box(w, h, d, x, y, z, color, group, opts={}){
+  const mat = new THREE.MeshStandardMaterial({
+    color, metalness: opts.metal ?? 0.05, roughness: opts.rough ?? 0.85,
+    transparent: opts.opacity !== undefined && opts.opacity < 1, opacity: opts.opacity ?? 1,
+    side: opts.double ? THREE.DoubleSide : THREE.FrontSide
+  });
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, y, z);
+  m.castShadow = opts.shadow !== false; m.receiveShadow = true;
+  group.add(m);
+  return m;
+}
+function label(text, pos, cls, group){
+  const div = document.createElement('div');
+  div.className = 'lbl' + (cls ? ' ' + cls : '');
+  div.textContent = text;
+  const o = new CSS2DObject(div);
+  o.position.copy(pos);
+  (group || scene).add(o);
+}
+const V = (x,y,z) => new THREE.Vector3(x,y,z);
+
+/* ================= ПЛОЩАДКА ================= */
+const gGround = grp('ground'), gSlabs = grp('slabs');
+box(170, 0.2, 210, W/2, -0.78, L/2, 0xe9eef3, gGround, {shadow:false});          // территория
+box(W+7, 0.55, L+6, W/2, -0.275, L/2, 0xc9b99a, gGround);                        // подготовка 31×52
+box(9.8, 0.55, 10.6, 3.9, -0.275, -5.1, 0xc9b99a, gGround);                       // апрон у лестницы
+const fbxL = []; for (let i = 0; i <= 8; i++) fbxL.push(i*MOD);                  // 0..24 (9 линий)
+fbxL.forEach(x => box(SLAB_W-0.015, SLAB_T, L+2*OZ, x, SLAB_T/2, L/2, 0xb9bec4, gSlabs, {rough:0.95}));
+
+/* ================= ПРОСТРАНСТВЕННЫЙ ФУНДАМЕНТ (зеркало покрытия) ================= */
+const gFnd = grp('fnd'), gNodes = grp('nodes');
+{
+  const fx = []; for (let i = 0; i <= 9; i++) fx.push(-OX + i*MOD);              // -1.5..25.5 (10)
+  const fz = []; for (let j = 0; j <= 16; j++) fz.push(-OZ + j*MOD);             // -1..47 (17)
+  const fbx = []; for (let i = 0; i < 9; i++) fbx.push(fx[i] + MOD/2);           // 0..24 (9, смещение)
+  const fbz = []; for (let j = 0; j < 16; j++) fbz.push(fz[j] + MOD/2);          // 0.5..45.5 (16)
+  const FB = (i,j) => V(fbx[i], FND_BOT, fbz[j]);      // нижний пояс — смещённая сетка (опирается на плиты)
+  const FT = (i,j) => V(fx[i], FND_TOP, fz[j]);        // верхний пояс — полная сетка (несёт пол)
+  const chT = [], chB = [], diags = [], nT = [], nB = [];
+  for (let j = 0; j < fz.length; j++) for (let i = 0; i < fx.length; i++){
+    nT.push(FT(i,j));
+    if (i < fx.length-1) chT.push([FT(i,j), FT(i+1,j)]);
+    if (j < fz.length-1) chT.push([FT(i,j), FT(i,j+1)]);
+  }
+  for (let j = 0; j < fbz.length; j++) for (let i = 0; i < fbx.length; i++){
+    nB.push(FB(i,j));
+    if (i < fbx.length-1) chB.push([FB(i,j), FB(i+1,j)]);
+    if (j < fbz.length-1) chB.push([FB(i,j), FB(i,j+1)]);
+    diags.push([FB(i,j), FT(i,j)], [FB(i,j), FT(i+1,j)], [FB(i,j), FT(i,j+1)], [FB(i,j), FT(i+1,j+1)]);
+  }
+  makeRods(chT, 0.062, 0x9a7b52, gFnd);
+  makeRods(chB, 0.062, 0x8a6a45, gFnd);
+  makeRods(diags, 0.048, 0xc0a67e, gFnd);
+  makeNodes(nT, 0.115, 0xd97a1e, gNodes);
+  makeNodes(nB, 0.105, 0xd97a1e, gNodes);
+}
+
+/* ================= ПОЛ — СЭНДВИЧ-ПАНЕЛИ ПО ВЕРХНЕМУ ПОЯСУ ================= */
+const gFloor = grp('floor');
+box(W, FLR_T, L, W/2, FND_TOP + FLR_T/2, L/2, 0xded8c8, gFloor, {rough:0.7});
+
+/* ================= КОЛОННЫ △700 ПО ПЕРИМЕТРУ ================= */
+const gCols = grp('columns'), gColsH = grp('columnsH');
+const colZ = [0, 6, 12, 18, 24, 30, 36, 42, 46];
+function isHeavyCol(cx, cz){                       // углы + через одну колонну по периметру
+  const corner = (cx === 0 || cx === W) && (cz === 0 || cz === L);
+  const sideIdx = colZ.indexOf(cz);
+  const sideAlt = (cx === 0 || cx === W) && sideIdx >= 0 && sideIdx % 2 === 0;   // z: 0,12,24,36 и 46
+  const endAlt  = (cz === 0 || cz === L) && (cx === 0 || cx === 12 || cx === W);
+  return corner || sideAlt || endAlt;
+}
+const colDefs = [];
+colZ.forEach(z => { colDefs.push([0, z, Math.PI]); colDefs.push([W, z, 0]); });
+[0, 6, 12, 18, 24].forEach(x => { colDefs.push([x, 0, -Math.PI/2]); colDefs.push([x, L, Math.PI/2]); });
+function buildColumns(defs, radius, color, group, nodeR){
+  const rods = [], nodes = [], support = [];
+  defs.forEach(([cx, cz, phi]) => {
+    const topY = yB(cx);
+    const LEVELS = []; for (let k = 0; k <= 5; k++) LEVELS.push(FFL + (topY - FFL) * k / 5);
+    const verts = [0, 1, 2].map(k => {
+      const a = phi + k * 2*Math.PI/3;
+      return [cx + radius*Math.cos(a), cz + radius*Math.sin(a)];
+    });
+    verts.forEach(([vx, vz]) => rods.push([V(vx, FFL, vz), V(vx, topY, vz)]));
+    LEVELS.forEach(y => verts.forEach(([vx, vz]) => nodes.push(V(vx, y, vz))));
+    for (let l = 0; l < LEVELS.length-1; l++)
+      for (let f = 0; f < 3; f++){
+        const [ax, az] = verts[f], [bx2, bz2] = verts[(f+1)%3];
+        if (l % 2 === 0) rods.push([V(ax, LEVELS[l], az), V(bx2, LEVELS[l+1], bz2)]);
+        else             rods.push([V(bx2, LEVELS[l], bz2), V(ax, LEVELS[l+1], az)]);
+      }
+    verts.forEach(([vx, vz]) => rods.push([V(vx, topY, vz), V(cx, topY, cz)]));
+    support.push(V(cx, topY, cz));
+  });
+  makeRods(rods, radius > 0.5 ? 0.085 : 0.075, color, group, {seg:8});
+  makeNodes(nodes, nodeR, 0xd97a1e, gNodes);
+  makeNodes(support, radius > 0.5 ? 0.26 : 0.20, 0xb33a2b, gNodes);
+}
+{
+  const std = [], hvy = [];
+  colDefs.forEach(d => (isHeavyCol(d[0], d[1]) ? hvy : std).push(d));
+  buildColumns(std, TRI_R,  0x3a5f8a, gCols,  0.075);
+  buildColumns(hvy, TRI_HR, 0x2b3f5c, gColsH, 0.10);
+}
+
+/* ================= ПОКРЫТИЕ: ПСПК «МАРХИ» СО ВСПАРУШИВАНИЕМ, 24×46 ================= */
+const gRoof = grp('roof');
+{
+  const bx = []; for (let x = 0; x <= W; x += MOD) bx.push(x);                   // 9
+  const bz = []; for (let z = 0; z <= 45; z += MOD) bz.push(z); bz.push(L);      // 16
+  const tx = bx.slice(0, -1).map(x => x + MOD/2);                                // 8
+  const tz = []; for (let j = 0; j < bz.length-1; j++) tz.push((bz[j]+bz[j+1])/2); // 15
+  const B = (i,j) => V(bx[i], yB(bx[i]), bz[j]);
+  const T = (i,j) => V(tx[i], yT(tx[i]), tz[j]);
+  const chB = [], chT = [], diags = [], nB = [], nT = [];
+  for (let j = 0; j < bz.length; j++) for (let i = 0; i < bx.length; i++){
+    nB.push(B(i,j));
+    if (i < bx.length-1) chB.push([B(i,j), B(i+1,j)]);
+    if (j < bz.length-1) chB.push([B(i,j), B(i,j+1)]);
+  }
+  for (let j = 0; j < tz.length; j++) for (let i = 0; i < tx.length; i++){
+    nT.push(T(i,j));
+    if (i < tx.length-1) chT.push([T(i,j), T(i+1,j)]);
+    if (j < tz.length-1) chT.push([T(i,j), T(i,j+1)]);
+    diags.push([T(i,j), B(i,j)], [T(i,j), B(i+1,j)], [T(i,j), B(i,j+1)], [T(i,j), B(i+1,j+1)]);
+  }
+  makeRods(chB, 0.062, 0x2e6f9e, gRoof);
+  makeRods(chT, 0.062, 0x35807a, gRoof);
+  makeRods(diags, 0.048, 0x6fa8c9, gRoof);
+  makeNodes(nB, 0.125, 0xd97a1e, gNodes);
+  makeNodes(nT, 0.105, 0xe8a54b, gNodes);
+}
+
+/* ================= ОГРАЖДЕНИЕ — СЭНДВИЧ-ПАНЕЛИ ИЗНУТРИ КАРКАСА ================= */
+const gPanels = grp('panels');
+const P_IN = TRI_R/2 + 0.155;                       // ≈0.36 — грань у внутренней стороны колонн
+const panOpts = { opacity: 0.32, metal: 0.1, rough: 0.55, double: true, shadow: false };
+{
+  const H = ROOF_BOT - FFL - 0.02, yc = FFL + H/2;
+  for (let k = 0; k < colZ.length-1; k++){            // боковые стены (ось А / ось Д)
+    const z0 = colZ[k], z1 = colZ[k+1], len = z1 - z0 - 0.15, zc = (z0+z1)/2;
+    box(0.15, H, len, P_IN, yc, zc, 0xd6e7f2, gPanels, panOpts);
+    box(0.15, H, len, W - P_IN, yc, zc, 0xd6e7f2, gPanels, panOpts);
+  }
+  [0, 6, 12, 18].forEach(x0 => {                      // торцы ступенями за вспарушиванием
+    const xc = x0 + 3, top = yB(xc) - 0.02;
+    box(6 - 0.15, top - FFL, 0.15, xc, (FFL + top)/2, L - P_IN, 0xd6e7f2, gPanels, panOpts);
+    box(6 - 0.15, top - FFL, 0.15, xc, (FFL + top)/2, P_IN, 0xd6e7f2, gPanels, panOpts);
+  });
+  box(W - 2*P_IN, 12.0 - FFL, 0.15, W/2, (FFL + 12.0)/2, AUX + 0.28, 0xe2d9c8, gPanels, { ...panOpts, opacity: 0.4 });
+  box(1.6, 2.2, 0.06, 3.2, FFL + 1.1, 0.36, 0x2b4a63, gPanels, {shadow:false});       // дверь
+  for (let i = 0; i < 8; i++){                        // кровельное ограждение по арке
+    const xc = i*3 + 1.5;
+    box(3, 0.12, L, xc, yT(xc) + 0.06, L/2, 0x9fc3dd, gPanels, { ...panOpts, opacity: 0.22 });
+  }
+}
+
+/* ================= ВСПОМОГАТЕЛЬНЫЙ БЛОК 5×24, 3 ЭТ. + ЛЕСТНИЦА ================= */
+const gAux = grp('aux'), gAuxInt = grp('auxInt');
+{
+  // --- каркас: стойки □200, балки, плиты перекрытий
+  const axX = [0.6, 6, 12, 18, 23.4], axZ = [0.5, 2.5, 4.5], floors = [FFL+3.2, FFL+6.4, FFL+9.6];
+  const rods = [];
+  axX.forEach(x => axZ.forEach(z => rods.push([V(x, FFL, z), V(x, FFL+9.6, z)])));
+  makeRods(rods, 0.14, 0x7a8c5a, gAux, {seg:4});
+  floors.forEach(f => {
+    axZ.forEach(z => box(W-1.2, 0.24, 0.2, W/2, f-0.12, z, 0x7a8c5a, gAux, {metal:0.4, rough:0.5}));
+    axX.forEach(x => box(0.2, 0.24, 4.0, x, f-0.12, 2.5, 0x7a8c5a, gAux, {metal:0.4, rough:0.5}));
+    box(W-1.2, 0.14, 4.2, W/2, f+0.07, 2.5, 0xcdd3d8, gAux, {rough:0.9});
+  });
+
+  // --- помощники для планировки
+  const wall  = (x0,z0,x1,z1,y0,h,gr=gAuxInt) => {
+    const dx = x1-x0, dz = z1-z0, len = Math.hypot(dx,dz);
+    const m = box(len, h, 0.1, (x0+x1)/2, y0+h/2, (z0+z1)/2, 0x9aa4ad, gr, {rough:0.8});
+    m.rotation.y = -Math.atan2(dz, dx);
+  };
+  const room = (x0,z0,dx,dz,y0,color,txt) => {
+    box(dx-0.02, 0.03, dz-0.02, x0+dx/2, y0+0.02, z0+dz/2, color, gAuxInt, {shadow:false, rough:0.85});
+    label(txt, V(x0+dx/2, y0+1.15, z0+dz/2), 'tag', gAuxInt);
+  };
+  const ST = { cSan:0x9fd3e8, cSho:0x7fbcd8, cLock:0xf2c9a4, cCorr:0xd6d9dc, cTech:0xc9c2b2,
+               cMed:0xf3b0b0, cTrain:0xd9c8f0, cFight:0xb7d99a, cStore:0xc9b6e0 };
+
+  // --- ЭТАЖ 1 (y = FFL): вход, тамбур, тепловой центр, инвентарные, санузлы, душевые, раздевалка
+  {
+    const y = FFL, X0 = 0.6, X1 = 23.4, Z0 = 0.5, Z1 = 4.5;
+    // наружные стены блока — уже в gPanels; внутренние перегородки:
+    wall(5.0, Z0, 5.0, Z1, y, 3.0);           // тамбур/гардероб | основная зона
+    wall(9.0, Z0, 9.0, Z1, y, 3.0);           // раздевалка+душевая | санузлы
+    wall(13.0, Z0, 13.0, Z1, y, 3.0);         // санузлы | инвентарная
+    wall(17.5, Z0, 17.5, Z1, y, 3.0);         // инвентарная | тепловой центр
+    wall(21.0, Z0, 21.0, Z1, y, 3.0);         // тепловой центр | венткамера
+    wall(5.0, 2.5, 9.0, 2.5, y, 3.0);         // раздевалка / душевая (поперёк)
+    room(X0, Z0, 4.4, 4.0, y, ST.cCorr, 'Тамбур · гардероб · вход');
+    room(5.0, Z0, 4.0, 2.0, y, ST.cLock, 'Раздевалка');
+    room(5.0, 2.5, 4.0, 2.0, y, ST.cSho, 'Душевые');
+    room(9.0, Z0, 4.0, 4.0, y, ST.cSan, 'Санузлы 1 эт. (М/Ж/МГН)');
+    room(13.0, Z0, 4.5, 4.0, y, ST.cStore, 'Инвентарная');
+    room(17.5, Z0, 3.5, 4.0, y, ST.cTech, 'Тепловой центр');
+    room(21.0, Z0, 2.4, 4.0, y, ST.cTech, 'Венткамера');
+    // стеллажи инвентарной и агрегаты теплового центра
+    box(4.0, 0.9, 0.4, 15.2, y+0.45, 1.0, 0x8a7f6a, gAuxInt, {rough:0.7});
+    box(4.0, 0.9, 0.4, 15.2, y+0.45, 2.0, 0x8a7f6a, gAuxInt, {rough:0.7});
+    box(1.2, 1.1, 0.9, 19.0, y+0.55, 1.2, 0xb8452e, gAuxInt);   // котёл/узел
+    box(0.9, 1.4, 0.7, 19.6, y+0.7, 3.4, 0x8a5a2e, gAuxInt);    // насосная группа
+    // шахты: вент + дымоход/воздуховоды вдоль правой стены
+    box(0.5, 9.4, 0.5, 23.0, FFL+4.7, 1.1, 0xc7ced4, gAuxInt, {rough:0.6});
+    box(0.4, 9.4, 0.4, 23.0, FFL+4.7, 1.9, 0xc7ced4, gAuxInt, {rough:0.6});
+  }
+  // --- ЭТАЖ 2 (y = FFL+3.2): зал единоборств, медкабинет, тренерская, санузлы
+  {
+    const y = FFL+3.2, X0 = 0.6, X1 = 23.4, Z0 = 0.5, Z1 = 4.5;
+    wall(13.0, Z0, 13.0, Z1, y, 3.0);         // зал единоборств | бытовой блок
+    wall(17.0, Z0, 17.0, Z1, y, 3.0);         // медкабинет | тренерская
+    wall(20.5, Z0, 20.5, Z1, y, 3.0);         // тренерская | санузлы
+    wall(13.0, 2.5, 17.0, 2.5, y, 3.0);       // коридор у санузлов
+    room(X0, Z0, 12.4, 4.0, y, ST.cFight, 'Зал единоборств + нац. виды северных народов');
+    room(13.0, Z0, 4.0, 2.0, y, ST.cMed, 'Медкабинет');
+    room(13.0, 2.5, 4.0, 2.0, y, ST.cCorr, 'Коридор');
+    room(17.0, Z0, 3.5, 4.0, y, ST.cTrain, 'Тренерская');
+    room(20.5, Z0, 2.9, 4.0, y, ST.cSan, 'Санузлы 2 эт.');
+    // ковёр/татыами и шведская стенка
+    box(10.5, 0.05, 3.0, 6.8, y+0.04, 2.5, 0x3d7ab5, gAuxInt, {shadow:false, rough:0.9});
+    box(0.08, 2.2, 1.6, 12.5, y+1.1, 2.5, 0x8a5a2e, gAuxInt, {rough:0.6});
+    // рабочий стол тренера, кушетка в медкабинете
+    box(1.2, 0.75, 0.6, 19.0, y+0.38, 1.0, 0x7a5c3e, gAuxInt);
+    box(1.8, 0.45, 0.7, 15.0, y+0.23, 1.1, 0xe8e2d4, gAuxInt);
+  }
+  // --- ЭТАЖ 3 (y = FFL+6.4): раздевалка+душевая 2, инвентарная 2, санузлы, склад/СИЗ
+  {
+    const y = FFL+6.4, X0 = 0.6, X1 = 23.4, Z0 = 0.5, Z1 = 4.5;
+    wall(9.0, Z0, 9.0, Z1, y, 3.0);
+    wall(13.0, Z0, 13.0, Z1, y, 3.0);
+    wall(17.5, Z0, 17.5, Z1, y, 3.0);
+    wall(21.0, Z0, 21.0, Z1, y, 3.0);
+    wall(5.0, 2.5, 9.0, 2.5, y, 3.0);
+    room(X0, Z0, 4.4, 4.0, y, ST.cCorr, 'Холл / зона ожидания');
+    room(5.0, Z0, 4.0, 2.0, y, ST.cLock, 'Раздевалка 2');
+    room(5.0, 2.5, 4.0, 2.0, y, ST.cSho, 'Душевые 2');
+    room(9.0, Z0, 4.0, 4.0, y, ST.cSan, 'Санузлы 3 эт.');
+    room(13.0, Z0, 4.5, 4.0, y, ST.cStore, 'Инвентарная 2');
+    room(17.5, Z0, 3.5, 4.0, y, ST.cTech, 'Склад СИЗ / сушка');
+    room(21.0, Z0, 2.4, 4.0, y, ST.cTech, 'Вент. приток');
+    box(3.6, 0.9, 0.4, 15.2, y+0.45, 1.0, 0x8a7f6a, gAuxInt, {rough:0.7});
+    box(3.6, 0.9, 0.4, 15.2, y+0.45, 2.0, 0x8a7f6a, gAuxInt, {rough:0.7});
+  }
+
+  // --- лестничная клетка: примыкает к торцу z=0, двухмаршевая
+  const gSt = gAux;
+  const LX0 = 2.6, LX1 = 5.0, LZ0 = -2.6, LZ1 = 0.5;  // в плане 2.4×3.1
+  const flight = (y0, dir) => {                        // dir=+1: подъём вдоль +Z; -1: вдоль -Z
+    const n = 8, run = 0.27, rise = 3.2/(n*2);
+    for (let i = 0; i < n; i++){
+      const zi = dir > 0 ? LZ0 + 0.2 + i*run : LZ1 - 0.2 - i*run;
+      const top = y0 + (i+1)*rise;
+      box(1.1, top - y0, 0.26, dir > 0 ? LX0+0.6 : LX1-0.6, (y0+top)/2, zi, 0xb8bec5, gSt);
+    }
+  };
+  [FFL, FFL+3.2, FFL+6.4].forEach(y => {
+    box(2.4, 0.12, 3.1, (LX0+LX1)/2, y+0.06, (LZ0+LZ1)/2, 0xcdd3d8, gSt, {rough:0.9});
+    flight(y, +1); flight(y+1.6, -1);
+  });
+  // ограждение лестничной клетки
+  box(2.5, 9.6, 0.12, (LX0+LX1)/2, FFL+4.8, LZ0, 0x9aa4ad, gSt, {opacity:0.55, double:true, shadow:false});
+  box(0.12, 9.6, 3.1, LX0, FFL+4.8, (LZ0+LZ1)/2, 0x9aa4ad, gSt, {opacity:0.55, double:true, shadow:false});
+  box(0.12, 9.6, 3.1, LX1, FFL+4.8, (LZ0+LZ1)/2, 0x9aa4ad, gSt, {opacity:0.55, double:true, shadow:false});
+
+  // --- пандус справа от входной площадки (удлинённый, уклон ≈ 1:5,8)
+  const ramp = box(1.5, 0.08, 7.8, 8.6, FFL/2 - 0.02, -4.9, 0xc3c9cf, gAux);
+  ramp.rotation.x = -Math.atan2(FFL, 7.8); ramp.position.y = FFL/2;
+}
+
+/* ================= ВХОДНАЯ ГРУППА И ФЛАГШТОКИ ================= */
+const gEnt = grp('entrance');
+{
+  const CX0 = 0, CX1 = 12, CZ0 = -3.0, CZ1 = 0.0;
+  const CTOP = FFL + 3.2, CDEP = 0.55;                 // верх навеса +5,60 (уровень 1-го этажа)
+  const rodsT = [], rodsB = [], rodsD = [], rodsC = [];
+  const xs = []; for (let x = CX0; x <= CX1; x += 1.5) xs.push(x);
+  const zs = [CZ0, -1.5, CZ1];
+  const xb = xs.slice(0, -1).map(x => x + 0.75);
+  const zb = [-2.25, -0.75];
+  xs.forEach((x, i) => { zs.forEach((z, j) => {
+    if (i < xs.length - 1) rodsT.push([V(x, CTOP, z), V(xs[i+1], CTOP, z)]);
+    if (j < zs.length - 1) rodsT.push([V(x, CTOP, z), V(x, CTOP, zs[j+1])]);
+  });});
+  xb.forEach((x, i) => { zb.forEach((z, j) => {
+    if (i < xb.length - 1) rodsB.push([V(x, CTOP-CDEP, z), V(xb[i+1], CTOP-CDEP, z)]);
+    if (j < zb.length - 1) rodsB.push([V(x, CTOP-CDEP, z), V(x, CTOP-CDEP, zb[j+1])]);
+    rodsD.push([V(x, CTOP-CDEP, z), V(xs[i],   CTOP, zs[j])],
+               [V(x, CTOP-CDEP, z), V(xs[i+1], CTOP, zs[j])],
+               [V(x, CTOP-CDEP, z), V(xs[i],   CTOP, zs[j+1])],
+               [V(x, CTOP-CDEP, z), V(xs[i+1], CTOP, zs[j+1])]);
+  });});
+  makeRods(rodsT, 0.045, 0x2e6f9e, gEnt);
+  makeRods(rodsB, 0.045, 0x35807a, gEnt);
+  makeRods(rodsD, 0.035, 0x6fa8c9, gEnt);
+  // две передние треугольные колонны △700
+  [[1.2, CZ0 + 0.5], [10.8, CZ0 + 0.5]].forEach(([px, pz]) => {
+    const verts = [0, 1, 2].map(k => { const a = Math.PI/2 + k*2*Math.PI/3; return [px + TRI_R*Math.cos(a), pz + TRI_R*Math.sin(a)]; });
+    const rr = [];
+    verts.forEach(([vx, vz]) => rr.push([V(vx, 0.05, vz), V(vx, CTOP-CDEP, vz)]));
+    makeRods(rr, 0.06, 0x3a5f8a, gEnt, {seg:8});
+    makeNodes([V(px, CTOP-CDEP, pz)], 0.14, 0xd97a1e, gEnt);
+  });
+  // подкосы к колоннам главного фасада
+  [0, 6, 12].forEach(x => rodsC.push([V(x, FFL + 2.0, 0), V(x, CTOP-CDEP, -2.25)]));
+  makeRods(rodsC, 0.05, 0x3a5f8a, gEnt);
+  // фасция (акцент), кровля и тёплая подшивка навеса
+  box(12.3, 0.5, 0.08, 6, CTOP + 0.22, CZ0 - 0.02, 0xd97a1e, gEnt, {metal:0.3, rough:0.4});
+  box(12.3, 0.5, 0.08, 6, CTOP + 0.22, CZ1 + 0.02, 0xd97a1e, gEnt, {metal:0.3, rough:0.4});
+  box(0.08, 0.5, 3.0, CX0 - 0.02, CTOP + 0.22, -1.5, 0xd97a1e, gEnt, {metal:0.3, rough:0.4});
+  box(0.08, 0.5, 3.0, CX1 + 0.02, CTOP + 0.22, -1.5, 0xd97a1e, gEnt, {metal:0.3, rough:0.4});
+  box(11.6, 0.06, 2.7, 6, CTOP - CDEP - 0.04, -1.5, 0xb98a5e, gEnt, {rough:0.6});
+  box(11.9, 0.08, 2.9, 6, CTOP + 0.54, -1.5, 0xd6e7f2, gEnt, {rough:0.5});
+  // --- широкая входная площадка 7,0×4,6 м на отм. +2,400 перед дверью
+  const PLX0 = 0.6, PLX1 = 7.6, PLZ0 = -4.6, PLZ1 = 0.0;
+  box(PLX1-PLX0, 0.2, PLZ1-PLZ0, (PLX0+PLX1)/2, FFL-0.10, (PLZ0+PLZ1)/2, 0xcdd2d8, gEnt, {rough:0.85});
+  box(PLX1-PLX0-0.1, 0.03, 0.25, (PLX0+PLX1)/2, FFL+0.02, PLZ0+0.28, 0xd97a1e, gEnt, {rough:0.6}); // тактильная полоса
+  // двухпольная остеклённая дверь в плоскости фасада (панели z≈0,36)
+  box(1.8, 0.12, 0.16, 3.8, FFL+2.2, 0.30, 0x3a4a55, gEnt);
+  [3.0, 4.56].forEach(dx => box(0.12, 2.16, 0.16, dx, FFL+1.08, 0.30, 0x3a4a55, gEnt));
+  box(0.74, 2.05, 0.05, 3.43, FFL+1.06, 0.30, 0x9fc3d8, gEnt, {opacity:0.55, rough:0.15, double:true, shadow:false});
+  box(0.74, 2.05, 0.05, 4.23, FFL+1.06, 0.30, 0x9fc3d8, gEnt, {opacity:0.55, rough:0.15, double:true, shadow:false});
+  [2.7, 4.9].forEach(lx => makeNodes([V(lx, FFL+2.42, 0.14)], 0.09, 0xffe6b0, gEnt));  // подсветка входа
+  // --- лестница: 15 подъёмов по 160 мм, проступь 300 мм, ширина 3,0 м
+  const STX0 = 2.3, STX1 = 5.3, STN = 15, RISE = FFL/STN, RUN = 0.30;
+  for (let i = 1; i <= STN; i++){
+    const top = FFL - i*RISE;
+    box(STX1-STX0, 0.34, RUN+0.02, (STX0+STX1)/2, top-0.09, PLZ0 - RUN/2 - (i-1)*RUN, 0xc3c9cf, gEnt, {rough:0.9});
+  }
+  const STZ1 = PLZ0 - STN*RUN;                                   // подошва лестницы z ≈ -9,1
+  box(STX1-STX0+1.6, 0.05, 1.4, (STX0+STX1)/2, 0.025, STZ1-0.9, 0xb9bfc6, gEnt, {rough:0.9}); // плита у подошвы
+  // --- поручни: площадка h=1,1 м + наклонные на лестнице h=0,9 м (нерж.)
+  const RC = 0xd4dae0, rOpts = {seg:8, metal:0.85, rough:0.25};
+  const posts = [];
+  for (let x = PLX0; x <= STX0 + 0.01; x += 1.4) posts.push([x, PLZ0]);
+  for (let x = STX1; x <= PLX1 + 0.01; x += 1.15) posts.push([x, PLZ0]);
+  [PLX0, PLX1].forEach(px => { for (let z = PLZ0 + 1.15; z < PLZ1; z += 1.15) posts.push([px, z]); });
+  posts.forEach(([px, pz]) => makeRods([[V(px, FFL, pz), V(px, FFL+1.1, pz)]], 0.033, RC, gEnt, rOpts));
+  makeRods([[V(PLX0, FFL+1.1, PLZ0), V(STX0, FFL+1.1, PLZ0)], [V(STX1, FFL+1.1, PLZ0), V(PLX1, FFL+1.1, PLZ0)],
+            [V(PLX0, FFL+1.1, PLZ0), V(PLX0, FFL+1.1, PLZ1)], [V(PLX1, FFL+1.1, PLZ0), V(PLX1, FFL+1.1, PLZ1)],
+            [V(PLX0, FFL+0.55, PLZ0), V(STX0, FFL+0.55, PLZ0)], [V(STX1, FFL+0.55, PLZ0), V(PLX1, FFL+0.55, PLZ0)],
+            [V(PLX0, FFL+0.55, PLZ0), V(PLX0, FFL+0.55, PLZ1)], [V(PLX1, FFL+0.55, PLZ0), V(PLX1, FFL+0.55, PLZ1)]], 0.045, RC, gEnt, rOpts);
+  [STX0+0.06, (STX0+STX1)/2, STX1-0.06].forEach(rx =>
+    makeRods([[V(rx, FFL+0.9, PLZ0), V(rx, 0.9, STZ1)]], 0.05, RC, gEnt, rOpts));
+  for (let i = 2; i < STN; i += 3){
+    const top = FFL - i*RISE, z = PLZ0 - (i-0.5)*RUN;
+    [STX0+0.06, STX1-0.06].forEach(rx => makeRods([[V(rx, top+0.06, z), V(rx, top+0.96, z)]], 0.03, RC, gEnt, rOpts));
+  }
+  // --- МАФ: бронзовые скульптуры спортсменов на передних углах площадки
+  const BRZ = 0x7a5a34, sOpts = {seg:10, metal:0.8, rough:0.32};
+  const sculpture = (px, pz, kind) => {
+    box(0.72, 0.75, 0.72, px, FFL+0.375, pz, 0xb5aa98, gEnt, {rough:0.7});   // постамент
+    box(0.94, 0.07, 0.94, px, FFL+0.035, pz, 0xa39a88, gEnt, {rough:0.75});  // цоколь
+    const y0 = FFL + 0.75, P = (x, y, z) => V(px+x, y0+y, pz+z);
+    makeRods([[kind==='run' ? P(0,0.92,0) : P(0,0.92,0), kind==='run' ? P(0,1.52,0.08) : P(0,1.52,0)]], 0.17, BRZ, gEnt, sOpts); // корпус
+    const limbs = kind === 'run' ? [
+      [P(0,0.92,0), P(0.10,0.50,0.26)], [P(0.10,0.50,0.26), P(0.06,0.04,0.16)],      // опорная нога
+      [P(0,0.92,0), P(-0.26,0.70,-0.26)], [P(-0.26,0.70,-0.26), P(-0.50,0.95,-0.40)],// занесённая нога
+      [P(0,1.45,0.06), P(0.22,1.22,0.32)], [P(0.22,1.22,0.32), P(0.30,1.00,0.44)],   // рука вперёд
+      [P(0,1.45,0.06), P(-0.20,1.26,-0.28)], [P(-0.20,1.26,-0.28), P(-0.28,1.60,-0.34)] // рука назад
+    ] : [
+      [P(0,0.92,0), P(0.08,0.48,-0.05)], [P(0.08,0.48,-0.05), P(0.10,0.03,-0.08)],   // опорная нога
+      [P(0,0.92,0), P(0.28,0.60,0.40)], [P(0.28,0.60,0.40), P(0.40,0.26,0.74)],      // ударная нога
+      [P(0,1.45,0), P(0.24,1.20,-0.26)], [P(0.24,1.20,-0.26), P(0.30,0.96,-0.38)],   // руки для баланса
+      [P(0,1.45,0), P(-0.24,1.22,0.22)], [P(-0.24,1.22,0.22), P(-0.34,0.98,0.32)]
+    ];
+    makeRods(limbs, 0.095, BRZ, gEnt, sOpts);
+    makeNodes([kind==='run' ? P(0,1.72,0.12) : P(0,1.72,0.04)], 0.135, BRZ, gEnt);   // голова
+    if (kind === 'kick') makeNodes([P(0.44,0.13,0.92)], 0.13, 0xe8e4dc, gEnt);       // мяч
+  };
+  sculpture(1.35, PLZ0+0.8, 'run');      // бегущий — левый угол площадки
+  sculpture(6.85, PLZ0+0.8, 'kick');     // футболист — правый угол площадки
+  [1.9, 5.7].forEach(bx => { makeRods([[V(bx, 0, -9.6), V(bx, 0.95, -9.6)]], 0.055, 0x3a4a55, gEnt, {seg:8}); makeNodes([V(bx, 1.04, -9.6)], 0.1, 0xffe6b0, gEnt); }); // светильники у подошвы
+  label('Входная площадка 7,0×4,6 м · лестница 15×160/300 с поручнями · МАФ: скульптуры спортсменов (бронза)', V(4.1, FFL+3.2, -5.2), 'tag', gEnt);
+  label('Входная группа: навес 12×3 м на отм. +5,60 — консольная ПСПК на 2 колоннах △700', V(6, CTOP + 1.3, -1.5), 'tag', gEnt);
+  // флагштоки на усиленных колоннах главного фасада (x = 0 и x = 12)
+  [[0, 0], [12, 0]].forEach(([fx, fz], idx) => {
+    const base = yB(fx);
+    makeRods([[V(fx, base, fz), V(fx, base + 6.2, fz)]], 0.055, 0xcfd6dc, gEnt, {seg:8, metal:0.8, rough:0.3});
+    makeNodes([V(fx, base + 6.35, fz)], 0.13, 0xd9b23a, gEnt);
+    const cols = idx === 0 ? [0xffffff, 0x2b5f9e, 0xc93a3a] : [0x2e7d3e, 0xffffff, 0x2e7d3e];
+    cols.forEach((c, i) => {
+      const gg = new THREE.PlaneGeometry(1.8, 0.4, 12, 1);
+      const pos = gg.attributes.position;
+      for (let k = 0; k < pos.count; k++){ const x = pos.getX(k); pos.setZ(k, Math.sin(x*3.0 + 0.6) * 0.10 * (x + 0.9) / 1.8); }
+      gg.computeVertexNormals();
+      const mm = new THREE.Mesh(gg, new THREE.MeshStandardMaterial({ color: c, side: THREE.DoubleSide, roughness: 0.7 }));
+      mm.rotation.y = Math.PI/2;
+      mm.position.set(fx, base + 6.0 - i*0.42, fz - 1.02);
+      mm.castShadow = true;
+      gEnt.add(mm);
+    });
+  });
+}
+
+/* ================= ВЕТРО-СНЕГОЗАЩИТНЫЕ ЩИТЫ ПОДПОЛЬЯ ================= */
+const gShields = grp('shields');
+{
+  const GAP = 0.35;                    // зазор проветривания снизу
+  const shH = FND_D - GAP - 0.15;      // высота щита ≈ 1,62 м
+  const shY = FND_BOT + GAP + shH/2;   // центр по высоте
+  const shOpts = { opacity: 0.5, metal: 0.25, rough: 0.45, double: true, shadow: false };
+  const C = 0xb8c8d4;
+  // боковые стороны (вдоль Z): x = -OX и x = W+OX
+  [-OX, W + OX].forEach(x => box(0.06, shH, L + 2*OZ - 0.1, x, shY, L/2, C, gShields, shOpts));
+  // торцы (вдоль X): z = -OZ и z = L+OZ
+  [-OZ, L + OZ].forEach(z => box(W + 2*OX - 0.1, shH, 0.06, W/2, shY, z, C, gShields, shOpts));
+  // вент. решётки над зазором у торцов (условно, полосы)
+  const grMat = new THREE.MeshStandardMaterial({ color: 0x6b7c8c, metalness: 0.4, roughness: 0.5 });
+  for (let i = 0; i < 8; i++){
+    const x = 2 + i * 2.6;
+    box(1.4, 0.5, 0.04, x, FND_BOT + GAP + 0.35, -OZ - 0.045, 0x6b7c8c, gShields, {shadow:false});
+  }
+  label('Ветро-снегозащитные щиты по периметру подполья · зазор 350 мм для зимнего проветривания · летом закрываются (не прогревать мерзлоту)', V(W/2, 2.9, -3.4), 'tag', gShields);
+}
+
+/* ================= ПОЛЕ МИНИ-ФУТБОЛ ================= */
+const gField = grp('field');
+{
+  const cx = W/2, cz = (AUX + P_IN + L - P_IN)/2;
+  const pw = 19, pl = 38, ly = FFL + 0.012;
+  box(W - 2*P_IN - 0.2, 0.02, 40.08, cx, FFL + 0.005, cz, 0x3f9e4d, gField, {shadow:false, rough:0.9});
+  const line = (w, d, x, z) => box(w, 0.006, d, x, ly + 0.008, z, 0xf4f8f4, gField, {shadow:false, rough:0.6});
+  line(pw, 0.08, cx, cz - pl/2); line(pw, 0.08, cx, cz + pl/2);
+  line(0.08, pl, cx - pw/2, cz); line(0.08, pl, cx + pw/2, cz);
+  line(pw, 0.08, cx, cz);
+  const circ = new THREE.Mesh(new THREE.TorusGeometry(3, 0.045, 8, 48),
+    new THREE.MeshStandardMaterial({ color: 0xf4f8f4, roughness: 0.6 }));
+  circ.rotation.x = Math.PI/2; circ.position.set(cx, ly + 0.008, cz); gField.add(circ);
+  [-1, 1].forEach(s => {
+    line(12, 0.08, cx, cz + s*(pl/2 - 5)); line(0.08, 5, cx - 6, cz + s*(pl/2 - 2.5)); line(0.08, 5, cx + 6, cz + s*(pl/2 - 2.5));
+    line(6, 0.08, cx, cz + s*(pl/2 - 2)); line(0.08, 2, cx - 3, cz + s*(pl/2 - 1)); line(0.08, 2, cx + 3, cz + s*(pl/2 - 1));
+    const gz = cz + s*pl/2;
+    makeRods([[V(cx-1.5, ly, gz - s*0.6), V(cx-1.5, ly+2, gz - s*0.6)],
+              [V(cx+1.5, ly, gz - s*0.6), V(cx+1.5, ly+2, gz - s*0.6)],
+              [V(cx-1.5, ly+2, gz - s*0.6), V(cx+1.5, ly+2, gz - s*0.6)]], 0.045, 0xffffff, gField, {seg:6, metal:0.2, rough:0.4});
+  });
+}
+
+/* ================= ОСИ И РАЗМЕРЫ ================= */
+const gDims = grp('dims');
+{
+  const dimMat = new THREE.LineBasicMaterial({ color: 0xb3451f });
+  function tick(p, dir){
+    let perp;
+    if (Math.abs(dir.y) > 0.9) perp = V(0.45, 0, 0);
+    else perp = new THREE.Vector3(-dir.z, 0, dir.x).normalize().multiplyScalar(0.45);
+    const gg = new THREE.BufferGeometry().setFromPoints([p.clone().add(perp), p.clone().sub(perp)]);
+    gDims.add(new THREE.Line(gg, dimMat));
+  }
+  function dim(a, b, text, lift){
+    gDims.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([a, b]), dimMat));
+    const dir = b.clone().sub(a).normalize();
+    tick(a, dir); tick(b, dir);
+    const mid = a.clone().add(b).multiplyScalar(0.5);
+    if (lift) mid.add(lift);
+    label(text, mid, 'dim', gDims);
+  }
+  dim(V(-4.4, 0.05, 0), V(-4.4, 0.05, L), '46 000', V(0, 0.3, 0));
+  dim(V(-2.6, 0.05, -OZ), V(-2.6, 0.05, L+OZ), '48 000 — пятно фундамента', V(0, 0.3, 0));
+  dim(V(0, 0.05, -4.4), V(W, 0.05, -4.4), '24 000', V(0, 0.3, 0));
+  dim(V(-OX, 0.05, -2.7), V(W+OX, 0.05, -2.7), '27 000', V(0, 0.3, 0));
+  dim(V(0, 0.05, 48.3), V(6, 0.05, 48.3), '6 000', V(0, 0.3, 0));
+  dim(V(26.9, 0, 48), V(26.9, FFL, 48), '2 400', V(0.9, 0, 0));
+  dim(V(26.9, FFL, 48), V(26.9, ROOF_BOT, 48), '10 000', V(0.9, 0, 0));
+  dim(V(26.9, ROOF_BOT, 48), V(26.9, ROOF_BOT + ROOF_D, 48), '2 120', V(0.9, 0, 0));
+  dim(V(12, ROOF_BOT, 48), V(12, yB(12), 48), '900', V(0.9, 0, 0));
+
+  const axZv = [0, 6, 12, 18, 24, 30, 36, 42, 46], axXv = [0, 6, 12, 18, 24];
+  const axLet = ['А','Б','В','Г','Д'];
+  axZv.forEach((z, i) => {
+    label(String(i+1), V(-5.8, 0.45, z), 'axis', gDims);
+    gDims.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(
+      [V(-4.9, 0.03, z), V(W+1.6, 0.03, z)]),
+      new THREE.LineBasicMaterial({ color: 0x9a86c4, transparent: true, opacity: 0.35 })));
+  });
+  axXv.forEach((x, i) => {
+    label(axLet[i], V(x, 0.45, -5.8), 'axis', gDims);
+    gDims.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(
+      [V(x, 0.03, -4.9), V(x, 0.03, L+1.6)]),
+      new THREE.LineBasicMaterial({ color: 0x9a86c4, transparent: true, opacity: 0.35 })));
+  });
+
+  label('ПСПК «МАРХИ» · вспарушивание f = 0,9 м (f/l ≈ 1/27) · h = 2,12 м', V(W/2, yT(12) + 1.1, 25.5), 'tag', gDims);
+  label('Пространственный фундамент — зеркало покрытия · выпуск 1,5/1,0 м за оси', V(W/2, 1.5, -3.2), 'tag', gDims);
+  label('Проветриваемое подполье 2,12 м — теплоотсечка мерзлого грунта', V(W + 2.2, 1.3, 14), 'tag', gDims);
+  label('Пол — сэндвич-панели по верхнему поясу фундамента', V(3.0, FFL + 0.55, 41), 'tag', gDims);
+  label('Плиты-ленты 120 мм, ш. 1,2 м по осям', V(21.5, 0.45, -1.2), 'tag', gDims);
+  label('колонна △700 · +2,400 … +12,400', V(-1.4, 8.6, L + 1.4), 'tag', gDims);
+  label('вспом. блок 5×24 м · 3 этажа по 3,2 м под общим покрытием', V(W/2, 13.0, 2.5), 'tag', gDims);
+}
+
+/* ================= UI ================= */
+document.getElementById('pToggle').onclick=()=>{document.getElementById('panel').classList.toggle('collapsed')};
+const layerMap = {
+  'L-ground':'ground', 'L-slabs':'slabs', 'L-fnd':'fnd', 'L-floor':'floor',
+  'L-columns':'columns', 'L-columnsH':'columnsH', 'L-roof':'roof', 'L-nodes':'nodes',
+  'L-panels':'panels', 'L-aux':'aux', 'L-auxInt':'auxInt', 'L-ent':'entrance', 'L-shields':'shields', 'L-field':'field', 'L-dims':'dims'
+};
+Object.entries(layerMap).forEach(([id, gname]) => {
+  document.getElementById(id).addEventListener('change', e => { groups[gname].visible = e.target.checked; });
+});
+function setView(px, py, pz, tx, ty, tz){
+  camera.position.set(px, py, pz);
+  controls.target.set(tx, ty, tz);
+}
+document.getElementById('v-iso').onclick   = () => setView(-40, 30, -32, W/2, 6, L/2);
+document.getElementById('v-plan').onclick  = () => setView(W/2, 115, L/2, W/2, 0, L/2);
+document.getElementById('v-front').onclick = () => setView(W/2, 9, -58, W/2, 7, L/2);
+document.getElementById('v-in').onclick    = () => setView(W/2, FFL + 1.7, L - 4, W/2, 5.5, 6);
+document.getElementById('v-aux').onclick   = () => setView(26, FFL + 8.5, -16, 9, FFL + 3.4, 2.5);
+document.getElementById('v-ent').onclick   = () => setView(4.1, FFL + 4.6, -15.5, 4.1, FFL + 1.4, -3.0);
+
+/* ================= ЦИКЛ ================= */
+addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  labelRenderer.setSize(innerWidth, innerHeight);
+});
+(function animate(){
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+})();
+</script>
+</body>
+</html>
