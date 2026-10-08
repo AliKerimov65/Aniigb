@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Плоские чертежи · Спортзал 24×46 м в Дудинке (ПСПК/МАРХИ)</title>
+<style>
+html,body{margin:0;height:100%;background:#10151f;font-family:'Segoe UI',system-ui,Arial,sans-serif;color:#dbe7ff}
+header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(13,20,32,.95);border-bottom:1px solid rgba(120,170,255,.25);flex-wrap:wrap}
+header h1{font-size:15px;margin:0;color:#8fc3ff;font-weight:600}
+.tab{padding:5px 14px;font-size:12.5px;background:rgba(90,162,255,.1);border:1px solid rgba(90,162,255,.35);color:#bcd6ff;border-radius:8px;cursor:pointer}
+.tab.active{background:rgba(90,162,255,.35);color:#fff}
+a.lnk{color:#8fc3ff;font-size:12.5px;text-decoration:none;margin-left:auto}
+#sheet{padding:14px;display:flex;justify-content:center}
+svg{background:#f8f7f1;border-radius:6px;box-shadow:0 4px 24px rgba(0,0,0,.5);max-width:100%;height:auto}
+.note{color:#8fa8cf;font-size:12px;padding:0 18px 14px;max-width:1200px}
+</style>
+<style>
+@media (max-width: 640px) {
+  body { padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom); }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>КЖ-0 · Концепт · Спортзал 24×46 м, Дудинка (ПСПК типа МАРХИ)</h1>
+  <button class="tab active" data-s="plan">План на отм. +2.400</button>
+  <button class="tab" data-s="s11">Разрез 1-1</button>
+  <button class="tab" data-s="s22">Разрез 2-2</button>
+  <a class="lnk" href="index.html">← 3D-модель</a>
+  <a class="lnk" href="calc.html">Расчётная схема →</a>
+</header>
+<div id="sheet"></div>
+<div class="note" id="note"></div>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const INK='#1a1a1a', AXIS='#0b5cad', DIM='#333', HVY='#c0392b', FND='#7a6a4f', PAN='#2e7d6b';
+
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function line(s,x1,y1,x2,y2,st,w,dash){return el('line',{x1,y1,x2,y2,stroke:st||INK,'stroke-width':w||1.2,'stroke-dasharray':dash||''},s)}
+function rect(s,x,y,w,h,fill,st,lw,dash){return el('rect',{x,y,width:w,height:h,fill:fill||'none',stroke:st||INK,'stroke-width':lw||1.2,'stroke-dasharray':dash||''},s)}
+function circ(s,cx,cy,r,fill,st){return el('circle',{cx,cy,r,fill:fill||'#fff',stroke:st||INK,'stroke-width':1.1},s)}
+function txt(s,x,y,t,size,anchor,col,bold,rot){const e=el('text',{x,y,'font-size':size||12,'text-anchor':anchor||'middle',fill:col||INK,'font-family':'Consolas,Menlo,monospace','font-weight':bold?'700':'400'},s);if(rot)e.setAttribute('transform',`rotate(${rot} ${x} ${y})`);e.textContent=t;return e}
+function tri(s,cx,cy,r,fill,st){const p=[];for(let i=0;i<3;i++){const a=-Math.PI/2+i*2*Math.PI/3;p.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1))}return el('polygon',{points:p.join(' '),fill:fill||'none',stroke:st||INK,'stroke-width':1.2},s)}
+// размерная линия горизонтальная
+function dimH(s,x1,x2,y,t,off){const g=el('g',{},s);line(g,x1,y,x2,y,DIM,0.9);arrow(g,x1,y,1,0);arrow(g,x2,y,-1,0);
+  const tick=8;line(g,x1,y-tick,x1,y+tick*0,DIM,0); // вертикальные выноски
+  line(g,x1,y-(off||14),x1,y+6,DIM,0.7);line(g,x2,y-(off||14),x2,y+6,DIM,0.7);
+  txt(g,(x1+x2)/2,y-4,t,11,'middle',DIM)}
+function dimV(s,x,y1,y2,t,off){const g=el('g',{},s);line(g,x,y1,x,y2,DIM,0.9);arrow(g,x,y1,0,1);arrow(g,x,y2,0,-1);
+  line(g,x-(off||14),y1,x+6,y1,DIM,0.7);line(g,x-(off||14),y2,x+6,y2,DIM,0.7);
+  txt(g,x-8,(y1+y2)/2,t,11,'middle',DIM,false,-90)}
+function arrow(g,x,y,dx,dy){const s=7;el('polygon',{points:`${x},${y} ${x-dx*s-dy*2.4},${y-dy*s-dx*2.4} ${x-dx*s+dy*2.4},${y-dy*s+dx*2.4}`,fill:DIM},g)}
+function axisBubble(s,x,y,t){circ(s,x,y,10);txt(s,x,y+4,t,11,'middle',INK,true)}
+
+// ============ ЛИСТ 1: ПЛАН ============
+function drawPlan(){
+ const W=1500,H=1090;
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`});
+ const m=18; // px per meter
+ const ox=290,oy=130; // origin: axis А/1 corner (x=0,z=0) — x→вправо, z→вниз
+ const X=v=>ox+v*m, Z=v=>oy+v*m;
+ // штамп
+ rect(svg,W-330,H-120,310,100,'none',INK,1);
+ txt(svg,W-175,H-88,'СПОРТЗАЛ 24×46 · ДУДИНКА',13,'middle',INK,true);
+ txt(svg,W-175,H-64,'План на отм. +2.400',12);
+ txt(svg,W-175,H-42,'М 1:200 · концепт · лист КЖ-0.1',11);
+ txt(svg,W-175,H-24,'ПСПК типа МАРХИ · снег VI · ветер IV',10);
+ // фундамент (вылет 1.5 / 1.0 м)
+ rect(svg,X(-1.5),Z(-1.0),27*m,48*m,'none',FND,1.6,'10 5');
+ txt(svg,X(13.5),Z(-1.0)-10,'Пространственный фундамент ПСПК 27×48 м (вылет за оси 1.5/1.0 м)',11,'middle',FND);
+ // контур здания
+ rect(svg,X(0),Z(0),24*m,46*m,'#eef3f7',INK,2.2);
+ // вспомогательный блок 24×5 (у торца, оси 1)
+ rect(svg,X(0),Z(0),24*m,5*m,'#e8dfd0',INK,1.6);
+ txt(svg,X(12),Z(2.9),'ВСПОМОГАТЕЛЬНЫЙ БЛОК 24.0×5.0 · 3 этажа',12,'middle',INK,true);
+ // перегородки 1 этажа
+ const rooms=[[0,4.8,'Тепловой центр'],[4.8,9.6,'Санузлы · венткамера'],[9.6,14.4,'Раздевалка + душевые'],[14.4,19.2,'Раздевалка + душевые'],[19.2,24,'Инвентарная']];
+ rooms.forEach(r=>{const x1=X(r[0]),x2=X(r[1]);line(svg,x1,Z(0),x1,Z(5),INK,0.9);txt(svg,(x1+x2)/2+3,Z(2.5),r[2],9.5,'middle','#444',false,-90)});
+ line(svg,X(24),Z(0),X(24),Z(5),INK,0.9);
+ // поле мини-футбол 38×19
+ rect(svg,X(2.5),Z(6),19*m,38*m,'none',PAN,1.4,'6 4');
+ line(svg,X(2.5),Z(25),X(21.5),Z(25),PAN,1.0,'6 4');
+ circ(svg,X(12),Z(25),3*m,'none',PAN);
+ txt(svg,X(12),Z(25)-3.4*m,'Поле 38×19 (мини-футбол)',10.5,'middle',PAN);
+ // вход и навес
+ rect(svg,X(0),Z(-3),12*m,3*m,'none',HVY,1.3,'4 3');
+ txt(svg,X(6),Z(-3)-8,'Навес входной группы 12×3 м · флагштоки Ф1, Ф2',10.5,'middle',HVY);
+ circ(svg,X(0),Z(-3),4,HVY,HVY);circ(svg,X(12),Z(-3),4,HVY,HVY);
+ // колонны по периметру
+ const colZ=[0,6,12,18,24,30,36,42,46], colX=[0,12,24];
+ const heavy=(x,z)=> ( (z===0||z===46) && colX.includes(x) ) || ( (x===0||x===24) && [0,12,24,36,46].includes(z) );
+ colX.forEach(x=>colZ.forEach(z=>{const r=heavy(x,z)?13:8.5;tri(svg,X(x),Z(z),r,heavy(x,z)?HVY:'#fff',heavy(x,z)?HVY:INK)}));
+ txt(svg,X(28.2),Z(6)+4,'△',11,'start',HVY,true);txt(svg,X(28.2)+16,Z(6)+4,'1200 — углы и через одну (ветер, жёсткость)',10.5,'start');
+ txt(svg,X(28.2),Z(8.4)+4,'△',11,'start',INK);txt(svg,X(28.2)+16,Z(8.4)+4,'700 — рядовые периметральные',10.5,'start');
+ // оси
+ const axZ=[[0,'1'],[6,'2'],[12,'3'],[18,'4'],[24,'5'],[30,'6'],[36,'7'],[42,'8'],[46,'9']];
+ const axX=[[0,'А'],[12,'Б'],[24,'В']];
+ axZ.forEach(a=>{const z=Z(a[0]);line(svg,X(-2.6),z,X(25.6),z,AXIS,0.8,'14 4 2 4');axisBubble(svg,X(-3.6),z,a[1]);axisBubble(svg,X(26.6),z,a[1])});
+ axX.forEach(a=>{const x=X(a[0]);line(svg,x,Z(-4.2),x,Z(47.2),AXIS,0.8,'14 4 2 4');axisBubble(svg,x,Z(-5.0),a[1]);axisBubble(svg,x,Z(48.0),a[1])});
+ // вертикальные размеры слева
+ const chain=[6,6,6,6,6,6,6,4];let acc=0;
+ chain.forEach(c=>{dimV(svg,X(-7.2),Z(acc),Z(acc+c),(c*1000).toString());acc+=c});
+ dimV(svg,X(-10.4),Z(0),Z(46),'46 000',26);
+ dimV(svg,X(-12.8),Z(-1.0),Z(47),'48 000 (фундамент)',26);
+ // горизонтальные размеры снизу
+ dimH(svg,X(0),X(12),Z(48.6),'12 000');dimH(svg,X(12),X(24),Z(48.6),'12 000');
+ dimH(svg,X(0),X(24),Z(50.2),'24 000',26);
+ dimH(svg,X(-1.5),X(25.5),Z(51.8),'27 000 (фундамент)',26);
+ // отметки
+ txt(svg,X(20),Z(44.6),'Отм. пола +2.400',10.5,'middle',INK,true);
+ txt(svg,X(20),Z(45.8),'Подполье проветриваемое 2.12 м',9.5,'middle','#555');
+ // север
+ circ(svg,W-90,90,26,'none',INK);txt(svg,W-90,96,'С',13,'middle',INK,true);el('polygon',{points:`${W-90},68 ${W-95},84 ${W-85},84`,fill:INK},svg);
+ // заголовок листа
+ txt(svg,880,52,'ПЛАН на отм. +2.400',17,'start',INK,true);
+ txt(svg,880,72,'М 1:200',12,'start','#555');
+ return svg;
+}
+
+// ============ ЛИСТ 2: РАЗРЕЗ 1-1 (продольный) ============
+function drawS11(){
+ const W=1500,H=760;
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`});
+ const m=22, ox=200, oy=470; // oy = уровень ±0.000
+ const Z=v=>ox+v*m, Y=v=>oy-v*m;
+ // грунт
+ line(svg,60,Y(0),W-60,Y(0),INK,2);
+ for(let x=70;x<W-70;x+=26)line(svg,x,Y(0),x-14,Y(0)+12,'#777',0.8);
+ txt(svg,64,Y(0)+26,'Щебёночная подготовка, плиты ж/б 120×1200 мм по осям',10,'start','#555');
+ // пространственный фундамент (от 0.12 до 2.24)
+ rect(svg,Z(-1.0),Y(2.24),48*m,2.12*m,'none',FND,1.5);
+ // диагонали фундамента
+ for(let i=0;i<16;i++){const z1=-1.0+i*3;const z2=z1+3;if(z2>47)break;line(svg,Z(z1),Y(0.12),Z(z2),Y(2.24),FND,0.7);line(svg,Z(z1),Y(2.24),Z(z2),Y(0.12),FND,0.7)}
+ txt(svg,Z(24),Y(2.24)-10,'Пространственный фундамент ПСПК 48×27 м · h=2.12 м · 28 кг/м²',11,'middle',FND,true);
+ // пол
+ line(svg,Z(0),Y(2.4),Z(46),Y(2.4),INK,2.4);
+ txt(svg,Z(44),Y(2.4)-6,'Пол — сэндвич-панели по верхнему поясу',9.5,'middle','#555');
+ // щиты подполья
+ rect(svg,Z(-1.0),Y(2.24),0.35, (2.24-0.35)*m,'#c9d6e2',INK,1.0);
+ rect(svg,Z(47)-0.35,Y(2.24),0.35,(2.24-0.35)*m,'#c9d6e2',INK,1.0);
+ txt(svg,Z(-1.0)-8,Y(1.4),'Щит зазор 350',9,'end',PAN);
+ // колонны и покрытие
+ const colZ=[0,6,12,18,24,30,36,42,46];
+ colZ.forEach((z,i)=>{const w=[0,12,24,36,46].includes(z)?5:3.2;rect(svg,Z(z)-w/2,Y(12.4),w,(12.4-2.4)*m,i%2?'#dfe7ef':'#d2dce6',INK,1)});
+ line(svg,Z(0),Y(12.4),Z(46),Y(12.4),INK,2);line(svg,Z(0),Y(14.52),Z(46),Y(14.52),INK,2);
+ for(let i=0;i<colZ.length-1;i++){const z1=colZ[i],z2=colZ[i+1];line(svg,Z(z1),Y(12.4),Z(z2),Y(14.52),'#2e6f9e',0.8);line(svg,Z(z1),Y(14.52),Z(z2),Y(12.4),'#2e6f9e',0.8)}
+ txt(svg,Z(24),Y(14.52)-10,'Покрытие ПСПК единой плитой 24×46 м · h=2.12 м · вспарушивание f=900 (см. разрез 2-2)',11,'middle','#2e6f9e',true);
+ // вспомогательный блок (3 этажа) z 0..5
+ rect(svg,Z(0),Y(12.0),5*m,(12.0-2.4)*m,'none',INK,1.3,'6 3');
+ [5.6,8.8,12.0].forEach(f=>line(svg,Z(0),Y(f),Z(5),Y(f),INK,0.9));
+ txt(svg,Z(2.5),Y(11.2),'3 эт.',9,'middle');txt(svg,Z(2.5),Y(7.4),'2 эт.',9,'middle');txt(svg,Z(2.5),Y(4.2),'1 эт.',9,'middle');
+ // навес
+ rect(svg,Z(-3),Y(5.6),3*m,0.55*m,'none',HVY,1.3);
+ line(svg,Z(-3),Y(5.6),Z(0),Y(2.4),HVY,0.8);
+ txt(svg,Z(-1.6),Y(6.4),'Навес +5.600',9.5,'middle',HVY);
+ // флагшток
+ line(svg,Z(-3),Y(5.6),Z(-3),Y(11.8),INK,1.6);rect(svg,Z(-3),Y(11.8),1.6*m*0.3,0.4*m,'#c0392b',INK,0.8);
+ txt(svg,Z(-3)+24,Y(11.6),'Ф1',9,'middle');
+ // оси
+ const axZ=[[0,'1'],[6,'2'],[12,'3'],[18,'4'],[24,'5'],[30,'6'],[36,'7'],[42,'8'],[46,'9']];
+ axZ.forEach(a=>{const z=Z(a[0]);line(svg,z,Y(-1.6),z,Y(15.6),AXIS,0.8,'14 4 2 4');axisBubble(svg,z,Y(-2.6),a[1])});
+ dimH(svg,Z(0),Z(46),Y(-4.4),'46 000',20);dimH(svg,Z(-1),Z(47),Y(-6.0),'48 000 (фундамент)',20);
+ // отметки справа
+ const mrk=W-120;
+ [[0,'±0.000'],[2.4,'+2.400'],[5.6,'+5.600'],[8.8,'+8.800'],[12.0,'+12.000'],[12.4,'+12.400'],[14.52,'+14.522']].forEach(mk=>{
+   line(svg,mrk,Y(mk[0]),mrk+52,Y(mk[0]),DIM,0.8);txt(svg,mrk+58,Y(mk[0])+4,mk[1],10.5,'start')});
+ // заголовок
+ txt(svg,ox-140,60,'РАЗРЕЗ 1-1',17,'start',INK,true);txt(svg,ox-140,82,'М 1:200',12,'start','#555');
+ // штамп
+ rect(svg,W-330,H-96,310,76,'none',INK,1);txt(svg,W-175,H-64,'Спортзал 24×46 · Дудинка · Разрез 1-1',12,'middle',INK,true);txt(svg,W-175,H-42,'КЖ-0.2 · концепт',11);
+ return svg;
+}
+
+// ============ ЛИСТ 3: РАЗРЕЗ 2-2 (поперечный) ============
+function drawS22(){
+ const W=1500,H=760;
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`});
+ const m=30, ox=360, oy=480;
+ const X=v=>ox+v*m, Y=v=>oy-v*m;
+ // грунт
+ line(svg,60,Y(0),W-60,Y(0),INK,2);
+ for(let x=70;x<W-70;x+=26)line(svg,x,Y(0),x-14,Y(0)+12,'#777',0.8);
+ // фундамент
+ rect(svg,X(-1.5),Y(2.24),27*m,2.12*m,'none',FND,1.5);
+ for(let i=0;i<9;i++){const x1=-1.5+i*3,x2=x1+3;line(svg,X(x1),Y(0.12),X(x2),Y(2.24),FND,0.7);line(svg,X(x1),Y(2.24),X(x2),Y(0.12),FND,0.7)}
+ txt(svg,X(12),Y(2.24)-10,'Пространственный фундамент ПСПК (вылет 1.5 м за осями)',11,'middle',FND,true);
+ // щиты
+ rect(svg,X(-1.5),Y(2.24),0.35,(2.24-0.35)*m,'#c9d6e2',INK,1);
+ rect(svg,X(25.5)-0.35,Y(2.24),0.35,(2.24-0.35)*m,'#c9d6e2',INK,1);
+ txt(svg,X(-1.5)-14,Y(1.5),'Ветро-снегозащитный щит, зазор 350 мм (зимой открыт)',9,'end',PAN);
+ // пол
+ line(svg,X(0),Y(2.4),X(24),Y(2.4),INK,2.4);
+ // колонны △1200 (угловые)
+ [[0],[24]].forEach(c=>{tri(svg,X(c[0]),Y(7.4),16,HVY,HVY)});
+ tri(svg,X(12),Y(7.4),16,HVY,HVY);
+ txt(svg,X(12),Y(6.2),'△1200',10,'middle',HVY,true);
+ // покрытие с вспарушиванием: дуга от +12.4 до +13.3 в середине (низ), +14.52..+15.42 (верх)
+ const arch=x=>12.4+0.9*(1-Math.pow((x-12)/12,2));
+ let pBot='',pTop='';for(let x=0;x<=24;x+=1){pBot+=`${X(x)},${Y(arch(x))} `;pTop+=`${X(x)},${Y(arch(x)+2.12)} `}
+ el('polygon',{points:pBot+pTop.split(' ').reverse().join(' '),fill:'rgba(46,111,158,0.12)',stroke:'none'},svg);
+ el('polyline',{points:pBot,fill:'none',stroke:INK,'stroke-width':2},svg);
+ el('polyline',{points:pTop,fill:'none',stroke:INK,'stroke-width':2},svg);
+ // диагонали покрытия
+ for(let i=0;i<8;i++){const x1=i*3,x2=x1+3;line(svg,X(x1),Y(arch(x1)),X(x2),Y(arch(x2)+2.12),'#2e6f9e',0.8);line(svg,X(x1),Y(arch(x1)+2.12),X(x2),Y(arch(x2)),'#2e6f9e',0.8)}
+ txt(svg,X(12),Y(16.2),'Покрытие ПСПК с вспарушиванием f = 900 мм (f/l ≈ 1/27) — сход снега и воды',11,'middle','#2e6f9e',true);
+ // стрелка f
+ line(svg,X(12),Y(12.4),X(12),Y(13.3),HVY,1.1);arrow(svg,X(12),Y(13.3),0,-1);arrow(svg,X(12),Y(12.4),0,1);
+ txt(svg,X(12)+16,Y(12.9),'f=900',10,'start',HVY);
+ // оси
+ [[0,'А'],[12,'Б'],[24,'В']].forEach(a=>{line(svg,X(a[0]),Y(-1.6),X(a[0]),Y(16.4),AXIS,0.8,'14 4 2 4');axisBubble(svg,X(a[0]),Y(-2.6),a[1])});
+ dimH(svg,X(0),X(12),Y(-4.2),'12 000');dimH(svg,X(12),X(24),Y(-4.2),'12 000');
+ dimH(svg,X(0),X(24),Y(-5.6),'24 000',20);dimH(svg,X(-1.5),X(25.5),Y(-7.0),'27 000 (фундамент)',20);
+ // отметки
+ const mrk=W-320;
+ [[0,'±0.000'],[2.4,'+2.400'],[12.4,'+12.400'],[13.3,'+13.301 (конёк низа)'],[14.52,'+14.522'],[15.42,'+15.422 (конёк верха)']].forEach(mk=>{
+   line(svg,mrkr(mk[0]),Y(mk[0]),mrk+40,Y(mk[0]),DIM,0.8);txt(svg,mrk+46,Y(mk[0])+4,mk[1],10,'start')});
+ function mrkr(){return mrk}
+ // заголовок
+ txt(svg,ox-220,60,'РАЗРЕЗ 2-2',17,'start',INK,true);txt(svg,ox-220,82,'М 1:200',12,'start','#555');
+ rect(svg,W-330,H-96,310,76,'none',INK,1);txt(svg,W-175,H-64,'Спортзал 24×46 · Дудинка · Разрез 2-2',12,'middle',INK,true);txt(svg,W-175,H-42,'КЖ-0.3 · концепт',11);
+ return svg;
+}
+
+const NOTES={
+ plan:'План: оси 1–9 шагом 6.0 м (крайняя ячейка 4.0 м), А–В по 12.0 м. Треугольные стержневые колонны △700 рядовые, △1200 на углах и через одну по периметру. Фундамент ПСПК 27×48 м выходит за оси. Вспомогательный блок 24×5 м в 3 этажа у торца с входной группой.',
+ s11:'Разрез 1-1: проветриваемое подполье 2.12 м между пространственным фундаментом и полом на отм. +2.400 — тепловая отсечка мерзлоты. Покрытие единой плитой ПСПК на 46 м. Вспомогательный блок — 3 этажа (+5.600 / +8.800 / +12.000).',
+ s22:'Разрез 2-2: вспарушивание покрытия f=900 мм (конёк +15.422). Угловые колонны △1200 воспринимают ветровые нагрузки IV района. По периметру подполья — регулируемые ветро-снегозащитные щиты с зазором 350 мм.'
+};
+function show(k){const d=document.getElementById('sheet');d.innerHTML='';d.appendChild(k==='plan'?drawPlan():k==='s11'?drawS11():drawS22());document.getElementById('note').textContent=NOTES[k];
+ document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.s===k))}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(b.dataset.s));
+show('plan');
+</script>
+</body>
+</html>
