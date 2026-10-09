@@ -583,24 +583,104 @@ const gEnt = grp('entrance');
   [1.9, 5.7].forEach(bx => { makeRods([[V(bx, 0, -9.6), V(bx, 0.95, -9.6)]], 0.055, 0x3a4a55, gEnt, {seg:8}); makeNodes([V(bx, 1.04, -9.6)], 0.1, 0xffe6b0, gEnt); }); // светильники у подошвы
   label('Входная площадка 7,0×4,6 м · лестница 15×160/300 с поручнями · МАФ: скульптуры спортсменов (бронза)', V(0.6, FFL+4.7, -7.8), 'tag2', gEnt);
   label('Входная группа: навес 12×3 м, отм. +5,60', V(16.5, FFL + 1.4, 2.5), 'tag', gEnt);
-  // флагштоки на усиленных колоннах главного фасада (x = 0 и x = 12)
-  [[0, 0], [12, 0]].forEach(([fx, fz], idx) => {
+  // флагштоки на усиленных колоннах главного фасада (x = 0, 12, 24):
+  // в центре — флаг России, слева (для смотрящего на фасад) — Красноярского края, справа — Дудинки
+  const lion2d = (g, cx, cy, s, col) => {
+    g.save(); g.translate(cx, cy); g.scale(s, s);
+    g.fillStyle = col; g.strokeStyle = col; g.lineCap = 'round'; g.lineJoin = 'round';
+    g.lineWidth = 5;  g.beginPath(); g.moveTo(14, 18); g.quadraticCurveTo(30, 10, 26, -14); g.stroke(); // хвост
+    g.beginPath(); g.arc(26, -16, 4.5, 0, 7); g.fill();                                                  // кисточка
+    g.lineWidth = 7;
+    g.beginPath(); g.moveTo(6, 14); g.lineTo(2, 34); g.stroke();                                         // опорная задняя лапа
+    g.beginPath(); g.moveTo(14, 16); g.lineTo(21, 30); g.stroke();                                       // вторая задняя
+    g.lineWidth = 13; g.beginPath(); g.moveTo(2, 6); g.lineTo(10, 18); g.stroke();                       // корпус
+    g.beginPath(); g.arc(-2, -4, 10, 0, 7); g.fill();                                                    // голова с гривой
+    g.beginPath(); g.moveTo(-8, -6); g.lineTo(-18, -2); g.lineTo(-8, 2); g.closePath(); g.fill();        // морда
+    g.lineWidth = 6;
+    g.beginPath(); g.moveTo(-4, 0); g.lineTo(-16, -14); g.stroke();                                      // поднятая лапа
+    g.beginPath(); g.moveTo(-2, 4); g.lineTo(-14, 10); g.stroke();                                       // передняя лапа
+    g.lineWidth = 2.6; g.beginPath(); g.moveTo(-22, -26); g.lineTo(-16, -8); g.stroke();                 // древко лопаты
+    g.beginPath(); g.moveTo(-26, -30); g.lineTo(-18, -28); g.lineTo(-20, -20); g.lineTo(-27, -22); g.closePath(); g.fill(); // лопата
+    g.lineWidth = 2.4; g.beginPath(); g.arc(-16, 12, 5, Math.PI*0.9, Math.PI*1.9); g.stroke();           // серп
+    g.restore();
+  };
+  const deer2d = (g, cx, cy, s, col) => {
+    g.save(); g.translate(cx, cy); g.scale(s, s);
+    g.fillStyle = col; g.strokeStyle = col; g.lineCap = 'round';
+    g.lineWidth = 7; g.beginPath(); g.moveTo(-16, 0); g.lineTo(10, 2); g.stroke();                       // туловище
+    g.lineWidth = 3.4; [-12, -6, 2, 8].forEach(lx => { g.beginPath(); g.moveTo(lx, 4); g.lineTo(lx - 2, 20); g.stroke(); }); // ноги
+    g.lineWidth = 4.5; g.beginPath(); g.moveTo(8, 0); g.lineTo(16, -12); g.stroke();                     // шея
+    g.beginPath(); g.arc(18, -14, 4, 0, 7); g.fill();                                                    // голова
+    g.lineWidth = 2.2;
+    g.beginPath(); g.moveTo(18, -17); g.lineTo(14, -28); g.moveTo(18, -17); g.lineTo(22, -28);
+    g.moveTo(14, -24); g.lineTo(10, -28); g.moveTo(22, -24); g.lineTo(26, -28); g.stroke();              // рога
+    g.restore();
+  };
+  const koch2d = (g, cx, cy, s) => {
+    g.save(); g.translate(cx, cy); g.scale(s, s);
+    g.fillStyle = '#1c1c1c'; g.strokeStyle = '#1c1c1c'; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(-26, 6); g.quadraticCurveTo(-20, 17, 0, 17); g.quadraticCurveTo(20, 17, 26, 4);
+    g.lineTo(18, 6); g.lineTo(-18, 6); g.closePath(); g.fill();                                          // корпус
+    g.lineWidth = 3;
+    g.beginPath(); g.moveTo(-26, 6); g.quadraticCurveTo(-33, 0, -30, -7); g.stroke();                    // корма
+    g.beginPath(); g.moveTo(26, 4); g.quadraticCurveTo(33, -2, 30, -9); g.stroke();                      // нос
+    g.beginPath(); g.moveTo(0, 6); g.lineTo(0, -26); g.stroke();                                         // мачта
+    g.fillStyle = '#f2c14e';
+    g.beginPath(); g.moveTo(1, -26); g.quadraticCurveTo(18, -14, 1, -2); g.closePath(); g.fill();        // паруса
+    g.beginPath(); g.moveTo(-1, -24); g.quadraticCurveTo(-14, -14, -1, -4); g.closePath(); g.fill();
+    g.restore();
+  };
+  const flagTex = kind => {
+    const c = document.createElement('canvas'); c.width = 300; c.height = 200;
+    const g = c.getContext('2d');
+    const GOLD = '#f2c14e', BLUE = '#1b5aa0';
+    if (kind === 'ru'){
+      g.fillStyle = '#ffffff'; g.fillRect(0, 0, 300, 67);
+      g.fillStyle = '#0039a6'; g.fillRect(0, 67, 300, 66);
+      g.fillStyle = '#d52b1e'; g.fillRect(0, 133, 300, 67);
+    } else if (kind === 'kray'){
+      g.fillStyle = '#c8102e'; g.fillRect(0, 0, 300, 200);
+      // герб: лазоревый столб со смещением вправо, в тонкой золотой окантовке
+      g.fillStyle = '#1b4f9c'; g.fillRect(176, 60, 32, 88);
+      g.strokeStyle = GOLD; g.lineWidth = 2; g.strokeRect(176, 60, 32, 88);
+      // венок из дубовых листьев и кедровых лап (условно, нижней дугой)
+      g.strokeStyle = GOLD; g.lineWidth = 6;
+      g.beginPath(); g.arc(150, 92, 62, Math.PI*0.22, Math.PI*0.88); g.stroke();
+      // корона
+      g.fillStyle = GOLD;
+      g.fillRect(136, 30, 28, 6);
+      [-2, 0, 2].forEach(k => { g.beginPath(); g.moveTo(140 + k*8, 30); g.lineTo(144 + k*8, 18); g.lineTo(148 + k*8, 30); g.closePath(); g.fill(); });
+      // золотой лев с лопатой и серпом
+      lion2d(g, 146, 104, 1.05, GOLD);
+    } else {
+      // Дудинка: скошенное слева сине-серебряное поле, узкий пояс переменных цветов
+      g.fillStyle = '#ffffff'; g.fillRect(0, 0, 300, 200);
+      g.fillStyle = BLUE; g.beginPath(); g.moveTo(0, 0); g.lineTo(258, 0); g.lineTo(0, 212); g.closePath(); g.fill();
+      g.lineCap = 'round'; g.lineWidth = 13;
+      g.strokeStyle = '#ffffff'; g.beginPath(); g.moveTo(6, 200); g.lineTo(126, 103); g.stroke();
+      g.strokeStyle = BLUE;    g.beginPath(); g.moveTo(126, 103); g.lineTo(248, 6); g.stroke();
+      deer2d(g, 72, 62, 1.15, '#ffffff');   // серебряный северный олень в лазури
+      koch2d(g, 205, 138, 1.2);             // чёрный коч с золотыми парусами в серебре
+    }
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+    return t;
+  };
+  [[24, 0, 'kray'], [12, 0, 'ru'], [0, 0, 'dud']].forEach(([fx, fz, kind]) => {
     const base = yB(fx);
     makeRods([[V(fx, base, fz), V(fx, base + 6.2, fz)]], 0.055, 0xcfd6dc, gEnt, {seg:8, metal:0.8, rough:0.3});
     makeNodes([V(fx, base + 6.35, fz)], 0.13, 0xd9b23a, gEnt);
-    const cols = idx === 0 ? [0xffffff, 0x2b5f9e, 0xc93a3a] : [0x2e7d3e, 0xffffff, 0x2e7d3e];
-    cols.forEach((c, i) => {
-      const gg = new THREE.PlaneGeometry(1.8, 0.4, 12, 1);
-      const pos = gg.attributes.position;
-      for (let k = 0; k < pos.count; k++){ const x = pos.getX(k); pos.setZ(k, Math.sin(x*3.0 + 0.6) * 0.10 * (x + 0.9) / 1.8); }
-      gg.computeVertexNormals();
-      const mm = new THREE.Mesh(gg, new THREE.MeshStandardMaterial({ color: c, side: THREE.DoubleSide, roughness: 0.7 }));
-      mm.rotation.y = Math.PI/2;
-      mm.position.set(fx, base + 6.0 - i*0.42, fz - 1.02);
-      mm.castShadow = true;
-      gEnt.add(mm);
-    });
+    const gg = new THREE.PlaneGeometry(1.8, 1.2, 24, 8);
+    const pos = gg.attributes.position;
+    for (let k = 0; k < pos.count; k++){ const x = pos.getX(k); pos.setZ(k, Math.sin(x*3.0 + 0.6) * 0.10 * (0.9 - x) / 1.8); }
+    gg.computeVertexNormals();
+    const mm = new THREE.Mesh(gg, new THREE.MeshStandardMaterial({ map: flagTex(kind), side: THREE.DoubleSide, roughness: 0.7 }));
+    mm.rotation.y = -Math.PI/2;   // лицевая сторона — к смотрящему на фасад
+    mm.position.set(fx, base + 5.5, fz - 1.02);
+    mm.castShadow = true;
+    gEnt.add(mm);
   });
+  label('Флаги: Красноярский край · Россия · Дудинка', V(12, yB(12) + 8.3, -1.4), 'tag', gEnt);
 }
 
 /* ================= ВЕТРО-СНЕГОЗАЩИТНЫЕ ЩИТЫ ПОДПОЛЬЯ ================= */
