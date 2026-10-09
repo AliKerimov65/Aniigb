@@ -7,8 +7,8 @@
 <style>
   html, body { margin:0; padding:0; height:100%; overflow:hidden; font-family:'Segoe UI', system-ui, sans-serif; background:#dfe9f0; }
   #scene { position:absolute; inset:0; }
-  #labels { position:absolute; inset:0; pointer-events:none; }
-  #panel { position:absolute; top:14px; left:14px; width:312px; max-height:calc(100% - 28px); overflow-y:auto;
+  #labels { position:absolute; inset:0; pointer-events:none; z-index:1; }
+  #panel { position:absolute; z-index:20; top:14px; left:14px; width:312px; max-height:calc(100% - 28px); overflow-y:auto;
     background:rgba(255,255,255,0.92); border:1px solid #b9c7d2; border-radius:10px;
     padding:14px 16px; box-shadow:0 4px 18px rgba(30,50,70,0.18); font-size:13px; color:#1e2c38; }
   #panel h1 { font-size:15px; margin:0 0 2px 0; color:#0e3a5c; }
@@ -34,6 +34,7 @@
   .lbl { font:11px 'Segoe UI', system-ui, sans-serif; color:#10344e; background:rgba(255,255,255,.85);
          padding:1px 6px; border-radius:4px; border:1px solid #b3c3cf; white-space:nowrap; }
   .lbl.tag { font-weight:600; color:#0e5c2e; border-color:#7fbc94; background:rgba(240,252,244,.92); }
+  #labels.noLbl .lbl { display:none; }
 
 @media (max-width: 640px) {
   #panel { top:calc(10px + env(safe-area-inset-top)); left:10px; right:10px; width:auto;
@@ -77,6 +78,7 @@
     <label><input type="checkbox" id="L-ent" checked><span class="sw" style="background:#d97a1e"></span>Входная группа и МАФ</label>
     <label><input type="checkbox" id="L-mast" checked><span class="sw" style="background:#ffd9a0"></span>Мачты наружного освещения 16 м</label>
     <label><input type="checkbox" id="L-sky" checked><span class="sw" style="background:#bcd8f0"></span>Облака</label>
+    <label><input type="checkbox" id="Lb-all" checked><span class="sw" style="background:#7fbc94"></span>Метки-подсказки на сцене</label>
   </fieldset>
   <fieldset><legend>Виды</legend>
     <div class="views">
@@ -544,7 +546,7 @@ const lumCones = [];
   const exitMat = new THREE.MeshStandardMaterial({ color: 0x0d2b1a, emissive: 0x2eea8a, emissiveIntensity: 1.1 });
   box(0.62, 0.24, 0.07, 3.8, FFL + 2.72, P_IN + 0.12, 0, gCeil, { mat: exitMat, shadow: false });
   box(0.62, 0.24, 0.07, 15, FFL + 2.72, L - P_IN - 0.12, 0, gCeil, { mat: exitMat, shadow: false });
-  label('Мостик обслуживания по оси зала · 40 LED-светильников 200 Вт · 300–500 лк на поле', V(W/2, yB(12) + 0.75, 31), 'tag', gCeil);
+  label('Мостик обслуживания по оси зала · 40 LED-светильников 200 Вт · 300–500 лк на поле', V(W/2, cwY - 0.9, 31), 'tag', gCeil);
   gCeil.userData.coneMat = coneMat;
 }
 
@@ -805,7 +807,7 @@ scene.add(atriumLight);
 /* метки */
 label('Ленточное остекление +10,20…+12,00 — боковое естественное освещение без засветки поля', V(W + 1.8, 11.2, 25), 'tag', gGlass);
 label('Витраж входной группы 11,3×9,6 м — стоечно-ригельная система', V(6, 8.2, -2.2), 'tag', gGlass);
-label('Потолок — сэндвич-панели по нижнему поясу ПСПК, повторяют вспарушивание', V(W/2, yB(12) + 0.6, 20), 'tag', gCeil);
+label('Потолок — сэндвич-панели по нижнему поясу ПСПК, повторяют вспарушивание', V(W/2, yB(12) + 1.7, 9), 'tag', gCeil);
 label('Мачты освещения 16 м — 6 шт по периметру', V(-9, 17.2, 23), 'tag', gMast);
 
 /* ================= РЕЖИМ ДЕНЬ / НОЧЬ ================= */
@@ -859,6 +861,13 @@ tTribBtn.onclick = () => {
 
 /* ================= UI ================= */
 document.getElementById('pToggle').onclick = () => document.getElementById('panel').classList.toggle('collapsed');
+// мастер-выключатель меток (на смартфоне скрыты по умолчанию)
+const labelsBox = document.getElementById('labels');
+const lbAll = document.getElementById('Lb-all');
+if (matchMedia('(max-width: 640px)').matches) lbAll.checked = false;
+const applyLblVis = () => labelsBox.classList.toggle('noLbl', !lbAll.checked);
+lbAll.addEventListener('change', applyLblVis);
+applyLblVis();
 const layerMap = {
   'L-frame': ['fnd','slabs','columns','columnsH','roof','nodes','floor','aux'],
   'L-facade': ['facade'], 'L-glass': ['glass'], 'L-ceil': ['ceiling'],
