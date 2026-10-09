@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Демонстрация · Форум «Россия — спортивная держава» · Спортзал 24×46 м, Дудинка</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#dfe9f0}
+#scene{position:fixed;inset:0}
+/* ===== NAV ===== */
+#modNav{position:fixed;top:14px;left:14px;z-index:2000;font-family:'Segoe UI',system-ui,-apple-system,sans-serif}
+#modNavBtn{display:flex;align-items:center;gap:9px;padding:10px 15px;border-radius:12px;border:1px solid rgba(140,190,255,.35);background:rgba(13,20,32,.88);backdrop-filter:blur(8px);color:#dbe8ff;font-size:13px;font-weight:600;letter-spacing:.2px;cursor:pointer;box-shadow:0 4px 18px rgba(10,20,40,.35);transition:border-color .15s,box-shadow .15s,background .15s}
+#modNavBtn:hover{border-color:rgba(160,205,255,.7);box-shadow:0 6px 24px rgba(10,20,40,.45)}
+#modNav.open #modNavBtn{background:rgba(22,32,50,.94);border-color:rgba(160,205,255,.8)}
+.burger{position:relative;width:16px;height:12px;flex:none}
+.burger i{position:absolute;left:0;width:100%;height:2px;border-radius:2px;background:#9ec7ff;transition:transform .28s cubic-bezier(.2,.8,.3,1),top .28s cubic-bezier(.2,.8,.3,1),opacity .2s}
+.burger i:nth-child(1){top:0}.burger i:nth-child(2){top:5px}.burger i:nth-child(3){top:10px}
+#modNav.open .burger i:nth-child(1){top:5px;transform:rotate(45deg)}
+#modNav.open .burger i:nth-child(2){opacity:0}
+#modNav.open .burger i:nth-child(3){top:5px;transform:rotate(-45deg)}
+#modNavMenu{position:absolute;top:calc(100% + 10px);left:0;width:332px;max-width:calc(100vw - 28px);max-height:calc(100vh - 90px);overflow:auto;background:rgba(13,20,32,.96);backdrop-filter:blur(12px);border:1px solid rgba(140,190,255,.3);border-radius:14px;box-shadow:0 18px 50px rgba(5,12,26,.55);padding:8px;opacity:0;transform:translateY(-10px) scale(.98);pointer-events:none;transition:opacity .22s cubic-bezier(.2,.8,.3,1),transform .22s cubic-bezier(.2,.8,.3,1)}
+#modNav.open #modNavMenu{opacity:1;transform:none;pointer-events:auto}
+.mnHead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 6px 10px;border-bottom:1px solid rgba(140,190,255,.14);margin-bottom:6px}
+.mnTitle{font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#7f9cc9}
+.mnBack,.mnClose{width:26px;height:26px;flex:none;border-radius:8px;border:1px solid rgba(140,190,255,.25);background:rgba(30,44,66,.6);color:#9ec7ff;font-size:14px;line-height:1;cursor:pointer;transition:background .15s,color .15s}
+.mnBack:hover,.mnClose:hover{background:rgba(58,84,120,.8);color:#fff}
+.mnItem{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;text-decoration:none;color:#c9dcf6;border:1px solid transparent;transition:background .15s,border-color .15s,transform .15s}
+.mnItem:hover{background:rgba(46,68,102,.55);border-color:rgba(140,190,255,.25);transform:translateX(2px)}
+.mnItem:active{transform:translateX(2px) scale(.99)}
+.mnIco{flex:none;width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(46,80,140,.45);border:1px solid rgba(140,190,255,.22);color:#9ec7ff}
+.mnTxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.mnTxt b{font-size:13px;font-weight:600;color:#eaf2ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mnTxt span{font-size:11px;color:#8aa4cc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mnArr{flex:none;color:#5f7fae;font-size:13px;transition:transform .15s,color .15s}
+.mnItem:hover .mnArr{transform:translateX(3px);color:#bcd6ff}
+.mnItem.cur{background:rgba(38,80,58,.5);border-color:rgba(80,220,160,.35)}
+.mnItem.cur .mnIco{background:rgba(46,140,96,.5);border-color:rgba(80,220,160,.4);color:#7dffc4}
+.mnItem.cur b::after{content:"\00b7 вы здесь";color:#3ecf8e;font-size:11px;font-weight:600;margin-left:6px}
+@media (max-width:640px){
+#modNav{top:calc(10px + env(safe-area-inset-top));left:10px}
+#modNavBtn{padding:9px 11px}
+#modNavBtn .mnLbl{display:none}
+}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
+</script>
+<style>
+/* ===== DEMO UI ===== */
+#capWrap{position:fixed;z-index:40;left:50%;bottom:44px;transform:translateX(-50%);width:min(920px,88vw);background:rgba(10,16,28,.78);backdrop-filter:blur(10px);border:1px solid rgba(140,190,255,.28);border-left:4px solid #d21e2b;border-radius:14px;padding:14px 22px;color:#eaf2ff;transition:opacity .3s ease,transform .3s ease;pointer-events:none}
+#capWrap.fade{opacity:0;transform:translateX(-50%) translateY(8px)}
+#capTitle{font-size:clamp(20px,2.6vw,34px);font-weight:700;letter-spacing:.3px;line-height:1.15}
+#capSub{font-size:clamp(12px,1.4vw,18px);color:#a9c8f5;margin-top:5px;line-height:1.45}
+#cardBG{position:fixed;inset:0;z-index:60;background:radial-gradient(ellipse at center,rgba(4,8,16,.25),rgba(4,8,16,.62));opacity:0;pointer-events:none;transition:opacity .5s ease}
+#cardBG.show{opacity:1}
+#card{position:fixed;z-index:61;left:50%;top:50%;transform:translate(-50%,-50%) scale(.96);text-align:center;padding:34px 48px;border-radius:20px;background:rgba(10,16,28,.72);backdrop-filter:blur(12px);border:1px solid rgba(242,193,78,.5);box-shadow:0 24px 80px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .5s ease,transform .5s ease;max-width:min(880px,90vw)}
+#card.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#card .cKick{font-size:clamp(11px,1.3vw,15px);letter-spacing:2.5px;color:#f2c14e;font-weight:700;text-transform:uppercase}
+#card .cTitle{font-size:clamp(28px,4.6vw,56px);font-weight:800;color:#fff;margin:12px 0 10px;line-height:1.08}
+#card .cSub{font-size:clamp(13px,1.7vw,20px);color:#bcd6ff;line-height:1.45}
+#progWrap{position:fixed;z-index:50;left:0;right:0;bottom:0;height:5px;background:rgba(20,30,48,.55)}
+#prog{height:100%;width:0;background:linear-gradient(90deg,#d21e2b,#f2c14e)}
+.progTick{position:absolute;top:-2px;width:2px;height:9px;background:rgba(120,150,200,.5)}
+#exitBtn{position:fixed;z-index:70;top:14px;right:14px;display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:11px;border:1px solid rgba(255,120,120,.4);background:rgba(13,20,32,.85);backdrop-filter:blur(8px);color:#ffb4b4;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+#exitBtn:hover{background:rgba(160,26,30,.9);color:#fff;border-color:#ff6b6b}
+#pauseHint{position:fixed;z-index:40;right:14px;bottom:14px;font-size:11.5px;color:#8aa4cc;background:rgba(13,20,32,.6);padding:5px 10px;border-radius:8px;pointer-events:none}
+#pauseHint.paused{color:#f2c14e;background:rgba(60,44,10,.75)}
+@media (max-width:640px){
+#capWrap{bottom:26px;padding:10px 14px}
+#pauseHint{display:none}
+#exitBtn{padding:8px 10px;font-size:11.5px;top:calc(10px + env(safe-area-inset-top));right:10px}
+#card{padding:24px 20px}
+}
+</style>
+</head>
+<body>
+<nav id="modNav">
+  <button id="modNavBtn" aria-haspopup="true" aria-expanded="false"><span class="burger"><i></i><i></i><i></i></span><span class="mnLbl">Модули проекта</span></button>
+  <div id="modNavMenu" role="menu">
+    <div class="mnHead"><button class="mnBack" id="modNavBack" title="Назад к 3D-модели">‹</button><span class="mnTitle">Модули проекта</span><button class="mnClose" id="modNavClose" title="Закрыть">✕</button></div>
+    <a class="mnItem" href="index.html" data-page="index.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l8.5 4.9v9.2L12 21.5l-8.5-4.9V7.4z"/><path d="M12 12l8.5-4.6M12 12v9.5M12 12L3.5 7.4"/></svg></span><span class="mnTxt"><b>3D-модель зала</b><span>Спортзал 24 × 46 м · Дудинка</span></span><span class="mnArr">&rarr;</span></a>
+    <a class="mnItem" href="assembly.html" data-page="assembly.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M6 19v-5l6-4 6 4v5"/><path d="M12 3v5"/><path d="M9.5 5.5L12 3l2.5 2.5"/></svg></span><span class="mnTxt"><b>Мультипликация сборки</b><span>12 этапов монтажа</span></span><span class="mnArr">&rarr;</span></a>
+    <a class="mnItem" href="render.html" data-page="render.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg></span><span class="mnTxt"><b>Визуализация день/ночь</b><span>Арт-подача объекта</span></span><span class="mnArr">&rarr;</span></a>
+    <a class="mnItem" href="logistics.html" data-page="logistics.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17V8h10v9"/><path d="M13 11h4.5l3 3v3h-3"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/><path d="M3 17.5h2.2M9 17.5h5.6"/></svg></span><span class="mnTxt"><b>Логистика поставки</b><span>Красноярск → Енисей → Дудинка</span></span><span class="mnArr">&rarr;</span></a>
+    <a class="mnItem" href="node.html" data-page="node.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v5M12 16.5v5M2.5 12h5M16.5 12h5M5.6 5.6l3.2 3.2M15.2 15.2l3.2 3.2M18.4 5.6l-3.2 3.2M8.8 15.2l-3.2 3.2"/></svg></span><span class="mnTxt"><b>Узел МАРХИ</b><span>Одноболтовой разъёмный узел</span></span><span class="mnArr">&rarr;</span></a>
+    <a class="mnItem" href="drawings.html" data-page="drawings.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><path d="M3.5 9.5h17M9.5 9.5v11"/><path d="M6.2 6.5h.01M13 14.5h5M13 17h3.5"/></svg></span><span class="mnTxt"><b>Чертежи КЖ-0</b><span>План и разрезы · оформление по ГОСТ</span></span><span class="mnArr">&rarr;</span></a>
+    <a class="mnItem" href="calc.html" data-page="calc.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8.5 6.5h7"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h.01M15.5 18h.01"/></svg></span><span class="mnTxt"><b>Расчётная схема</b><span>Снег VI · ветер IV · СП 20.13330.2016</span></span><span class="mnArr">&rarr;</span></a>
+    <a class="mnItem" href="forum.html" data-page="forum.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M10 8l4.6 3-4.6 3z" fill="currentColor" stroke="none"/><path d="M9 20.5h6"/></svg></span><span class="mnTxt"><b>Форум «Спортивная держава»</b><span>Цикличный ролик для стенда · автодемо</span></span><span class="mnArr">&rarr;</span></a>
+  </div>
+</nav>
+<div id="scene"></div>
+<button id="exitBtn" title="Вернуться к 3D-модели">✕ <span>Выйти из демонстрации</span></button>
+<div id="capWrap"><div id="capTitle"></div><div id="capSub"></div></div>
+<div id="cardBG"></div>
+<div id="card"><div class="cKick" id="cKick"></div><div class="cTitle" id="cTitle"></div><div class="cSub" id="cSub"></div></div>
+<div id="progWrap"><div id="prog"></div></div>
+<div id="pauseHint">Пробел — пауза · Esc — выход из демонстрации</div>
+<script type="module">
+import * as THREE from 'three';
+
+/* ================= ПАРАМЕТРЫ (единые с проектом) ================= */
+const W=24,L=46,AUX=5,MOD=3.0,SLAB_T=0.12,SLAB_W=1.2;
+const FND_D=MOD/Math.SQRT2,FND_BOT=SLAB_T,FND_TOP=FND_BOT+FND_D;
+const FLR_T=0.16,FFL=FND_TOP+FLR_T,COL_H=10.0,ROOF_BOT=FFL+COL_H,ROOF_D=FND_D,ARCH_F=0.9;
+const TRI=0.7,TRI_R=TRI/Math.sqrt(3),TRI_HR=1.2/Math.sqrt(3);
+const OX=1.5,OZ=1.0,PLZ0=-4.6;
+const archY=x=>{const n=(x-W/2)/(W/2);return ARCH_F*(1-n*n)};
+const yB=x=>ROOF_BOT+archY(x),yT=x=>yB(x)+ROOF_D;
+const colZ=[0,6,12,18,24,30,36,42,46];
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xdfe9f0);
+scene.fog=new THREE.Fog(0xdfe9f0,170,540);
+const camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,0.1,1200);
+camera.position.set(-46,30,-40);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+document.getElementById('scene').appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xffffff,0x9db4c4,0.95));
+const sun=new THREE.DirectionalLight(0xfff4e0,1.4);
+sun.position.set(45,75,-35);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-60,right:60,top:70,bottom:-70,far:280});
+sun.shadow.bias=-0.0006;
+scene.add(sun);
+const fill=new THREE.DirectionalLight(0xcfe0f0,0.45);
+fill.position.set(-40,30,40);scene.add(fill);
+
+/* ================= ХЕЛПЕРЫ ================= */
+const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+const _d=new THREE.Vector3(),_u=new THREE.Vector3(0,1,0),_q=new THREE.Quaternion(),_m=new THREE.Matrix4();
+function makeRods(list,radius,color,group,opts={}){
+  if(!list.length)return null;
+  const im=new THREE.InstancedMesh(new THREE.CylinderGeometry(radius,radius,1,opts.seg||10),
+    new THREE.MeshStandardMaterial({color,roughness:opts.rough??0.55,metalness:opts.metal??0.35,transparent:(opts.opacity??1)<1,opacity:opts.opacity??1}),list.length);
+  list.forEach((r,i)=>{
+    const a=V(...r[0]),b=V(...r[1]);
+    _d.subVectors(b,a);const len=_d.length();
+    _q.setFromUnitVectors(_u,_d.normalize());
+    _m.compose(a.add(b).multiplyScalar(0.5),_q,new THREE.Vector3(1,len,1));
+    im.setMatrixAt(i,_m);
+  });
+  im.castShadow=im.receiveShadow=true;group.add(im);return im;
+}
+function makeNodes(list,radius,color,group,opts={}){
+  if(!list.length)return null;
+  const im=new THREE.InstancedMesh(new THREE.SphereGeometry(radius,12,10),
+    new THREE.MeshStandardMaterial({color,roughness:0.4,metalness:0.5}),list.length);
+  list.forEach((p,i)=>{_m.makeTranslation(p[0],p[1],p[2]);im.setMatrixAt(i,_m)});
+  im.castShadow=true;group.add(im);return im;
+}
+function box(w,h,d,x,y,z,color,group,opts={}){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),
+    new THREE.MeshStandardMaterial({color,roughness:opts.rough??0.85,metalness:opts.metal??0.05,transparent:(opts.opacity??1)<1,opacity:opts.opacity??1}));
+  m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;
+  if(opts.ry)m.rotation.y=opts.ry;
+  group.add(m);return m;
+}
+
+/* ================= ГРУППЫ ================= */
+const gBase=new THREE.Group(),gFnd=new THREE.Group(),gShields=new THREE.Group(),gFloor=new THREE.Group(),
+      gCols=new THREE.Group(),gRoof=new THREE.Group(),gRoofSkin=new THREE.Group(),gWalls=new THREE.Group(),
+      gAux=new THREE.Group(),gField=new THREE.Group(),gEnt=new THREE.Group(),gFlags=new THREE.Group();
+[gBase,gFnd,gShields,gFloor,gCols,gRoof,gRoofSkin,gWalls,gAux,gField,gEnt,gFlags].forEach(g=>scene.add(g));
+
+/* ---- Площадка и окружение ---- */
+box(170,0.2,210,W/2,-0.78,L/2,0xe9eef3,gBase,{rough:1});
+box(W+7,0.6,L+6,W/2,-0.3,L/2,0xc9b99a,gBase);
+box(4.4,0.6,4.6,3.2,-0.3,-4.7,0xc9b99a,gBase);
+box(2.4,0.6,2.2,7.6,-0.3,-1.1,0xc9b99a,gBase);
+
+/* ---- Плиты фундамента 27×48 ---- */
+{
+  const xs=[-3,0,3,6,9,12,15,18,21,24,27],zs=[-1,2,5,8,11,14,17,20,23,26,29,32,35,38,41,44,47];
+  for(let i=0;i<xs.length-1;i++)for(let j=0;j<zs.length-1;j++){
+    box(xs[i+1]-xs[i],SLAB_T,zs[j+1]-zs[j],(xs[i]+xs[i+1])/2,SLAB_T/2,(zs[j]+zs[j+1])/2,0x8b93a0,gFnd,{rough:0.9});
+  }
+}
+
+/* ---- Пространственный фундамент ---- */
+{
+  const nx=W/MOD,nz=L/MOD,fndC=[],fndD=[],fndH=[],fndN=[];
+  for(let i=0;i<=nx;i++)for(let j=0;j<=nz;j++){fndN.push([i*MOD,FND_BOT,j*MOD]);fndN.push([i*MOD,FND_TOP,j*MOD])}
+  for(let i=0;i<=nx;i++)for(let j=0;j<nz;j++){
+    fndC.push([[i*MOD,FND_BOT,j*MOD],[i*MOD,FND_BOT,(j+1)*MOD]]);
+    fndC.push([[i*MOD,FND_TOP,j*MOD],[i*MOD,FND_TOP,(j+1)*MOD]]);
+  }
+  for(let i=0;i<nx;i++)for(let j=0;j<=nz;j++){
+    fndC.push([[i*MOD,FND_BOT,j*MOD],[(i+1)*MOD,FND_BOT,j*MOD]]);
+    fndC.push([[i*MOD,FND_TOP,j*MOD],[(i+1)*MOD,FND_TOP,j*MOD]]);
+  }
+  for(let i=0;i<=nx;i++)for(let j=0;j<=nz;j++)fndH.push([[i*MOD,FND_BOT,j*MOD],[i*MOD,FND_TOP,j*MOD]]);
+  for(let i=0;i<nx;i++)for(let j=0;j<nz;j++){
+    const p=(i+j)%2===0;
+    fndD.push([[(i+1)*MOD,FND_BOT,j*MOD],[p?i*MOD:(i+1)*MOD,FND_TOP,(j+1)*MOD]]);
+    fndD.push([[i*MOD,FND_BOT,j*MOD],[p?(i+1)*MOD:i*MOD,FND_TOP,(j+1)*MOD]]);
+    fndD.push([[(i+1)*MOD,FND_BOT,(j+1)*MOD],[p?i*MOD:(i+1)*MOD,FND_TOP,j*MOD]]);
+  }
+  makeRods(fndC,0.05,0x9a5a28,gFnd,{rough:0.5});
+  makeRods(fndD,0.028,0xc07a30,gFnd,{rough:0.5});
+  makeRods(fndH,0.05,0x9a5a28,gFnd);
+  makeNodes(fndN,0.085,0x6e4418,gFnd);
+}
+
+/* ---- Щиты подполья ---- */
+{
+  const sc=0xb0b8c2,so={rough:0.8,opacity:0.5};
+  box(W+2*OX,FND_D,0.08,W/2,FND_BOT+FND_D/2,-OZ,sc,gShields,so);
+  box(W+2*OX,FND_D,0.08,W/2,FND_BOT+FND_D/2,L+OZ,sc,gShields,so);
+  box(0.08,FND_D,L,-OX,FND_BOT+FND_D/2,L/2,sc,gShields,so);
+  box(0.08,FND_D,L-AUX,W+OX,FND_BOT+FND_D/2,(L+AUX)/2,sc,gShields,so);
+  box(0.08,FND_D,L-AUX,W+AUX,FND_BOT+FND_D/2,(L+AUX)/2,sc,gShields,so);
+  const wts=[0.6,1.8];
+  wts.forEach(h=>{box(0.9,0.5,0.06,3.2,FND_BOT+h,-OZ-0.045,0x39424e,gShields,{opacity:0.85});box(0.9,0.5,0.06,3.2,FND_BOT+h,L+OZ+0.045,0x39424e,gShields,{opacity:0.85});box(0.06,0.5,0.9,W+OX+0.045,FND_BOT+h,34,0x39424e,gShields,{opacity:0.85})});
+}
+
+/* ---- Плита пола ---- */
+box(W+2*OX,FLR_T,L+2*OZ,W/2,FND_TOP+FLR_T/2,L/2,0xd8dade,gFloor,{rough:0.95});
+box(AUX-OX,FLR_T,L,W+AUX/2+OX/2,FND_TOP+FLR_T/2,L/2,0xd8dade,gFloor,{rough:0.95});
+box(7.0,0.2,4.6,4.1,FFL-0.10,-2.3,0xd8dade,gFloor,{rough:0.95});
+box(2.4,0.2,2.2,7.6,FFL-0.10,-0.6,0xd8dade,gFloor,{rough:0.95});
+
+/* ---- Колонны ---- */
+{
+  const hc=[],hd=[],hn=[];
+  const defs=[];
+  colZ.forEach(z=>{defs.push({x:0,z});defs.push({x:W,z});if(z>0&&z<L)defs.push({x:W,z:Math.min(z+AUX,L)})});
+  const triIdx=Math.round(18/6),triIdx2=triIdx+1;
+  defs.push({x:0,z:18+AUX/2},{x:0,z:24+AUX/2});
+  defs.forEach(c=>{
+    const big=(c.x===0&&(Math.abs(c.z-18)<0.1||Math.abs(c.z-24)<0.1))||(c.x===W&&(Math.abs(c.z-18)<0.1||Math.abs(c.z-30)<0.1));
+    const R=big?TRI_HR:TRI_R;
+    const verts=[];
+    for(let k=0;k<3;k++){const a=(k/3)*Math.PI*2+Math.PI/6;
+      const vx=c.x+(c.x===0?-0.25:0.25)+R*Math.cos(a),vz=c.z+R*Math.sin(a);
+      verts.push([vx,vz]);
+      hc.push([[vx,FFL,vz],[vx,ROOF_BOT,vz]]);
+      hn.push([vx,FFL,vz],[vx,ROOF_BOT,vz]);
+    }
+    for(let k=0;k<3;k++){
+      const a=verts[k],b=verts[(k+1)%3];
+      const n=6;
+      for(let s=0;s<n;s++){
+        const ya=FFL+COL_H*s/n,yb=FFL+COL_H*(s+1)/n;
+        hd.push([[a[0],ya,a[1]],[b[0],yb,b[1]]]);
+        hd.push([[b[0],ya,b[1]],[a[0],yb,a[1]]]);
+        hd.push([[a[0],ya,a[1]],[a[0],yb,a[1]]]);
+      }
+    }
+  });
+  makeRods(hc,0.075,0x2456a8,gCols,{rough:0.4,metal:0.5});
+  makeRods(hd,0.032,0x4a86d8,gCols,{rough:0.45,metal:0.45});
+  makeNodes(hn,0.13,0x1a3a78,gCols);
+}
+
+/* ---- Покрытие ПСПК ---- */
+{
+  const nx=W/MOD,nz=L/MOD,rc=[],rd=[],rv=[],rn=[];
+  for(let i=0;i<=nx;i++)for(let j=0;j<=nz;j++){rn.push([i*MOD,yB(i*MOD),j*MOD]);rn.push([i*MOD,yT(i*MOD),j*MOD])}
+  for(let i=0;i<=nx;i++)for(let j=0;j<nz;j++){
+    rc.push([[i*MOD,yB(i*MOD),j*MOD],[i*MOD,yB(i*MOD),(j+1)*MOD]]);
+    rc.push([[i*MOD,yT(i*MOD),j*MOD],[i*MOD,yT(i*MOD),(j+1)*MOD]]);
+  }
+  for(let i=0;i<nx;i++)for(let j=0;j<=nz;j++){
+    rc.push([[i*MOD,yB(i*MOD),j*MOD],[(i+1)*MOD,yB((i+1)*MOD),j*MOD]]);
+    rc.push([[i*MOD,yT(i*MOD),j*MOD],[(i+1)*MOD,yT((i+1)*MOD),j*MOD]]);
+  }
+  for(let i=0;i<=nx;i++)for(let j=0;j<=nz;j++)rv.push([[i*MOD,yB(i*MOD),j*MOD],[i*MOD,yT(i*MOD),j*MOD]]);
+  for(let i=0;i<nx;i++)for(let j=0;j<nz;j++){
+    const p=(i+j)%2===0;
+    rd.push([[i*MOD,yB(i*MOD),j*MOD],[p?(i+1)*MOD:i*MOD,p?yT((i+1)*MOD):yT(i*MOD),(j+1)*MOD]]);
+    rd.push([[(i+1)*MOD,yB((i+1)*MOD),j*MOD],[p?i*MOD:(i+1)*MOD,p?yT(i*MOD):yT((i+1)*MOD),(j+1)*MOD]]);
+    rd.push([[(i+1)*MOD,yB((i+1)*MOD),(j+1)*MOD],[p?i*MOD:(i+1)*MOD,p?yT(i*MOD):yT((i+1)*MOD),j*MOD]]);
+  }
+  makeRods(rc,0.06,0x1f6f78,gRoof,{rough:0.4,metal:0.5});
+  makeRods(rd,0.03,0x2fa3b0,gRoof,{rough:0.45,metal:0.45});
+  makeRods(rv,0.045,0x1f6f78,gRoof);
+  makeNodes(rn,0.11,0x134b52,gRoof);
+  for(let i=0;i<nx;i++){const xc=i*MOD+MOD/2;box(MOD,yT(xc)-yB(xc)+0.05,0.07,xc,(yB(xc)+yT(xc))/2,-0.02,0x14565e,gRoof);box(MOD,yT(xc)-yB(xc)+0.05,0.07,xc,(yB(xc)+yT(xc))/2,L+0.02,0x14565e,gRoof)}
+  for(let i=0;i<nx;i++){const xc=i*MOD+MOD/2;
+    box(MOD,0.12,L,xc,yT(xc)+0.06,L/2,0x9fc3dd,gRoofSkin,{opacity:0.22,rough:0.15});
+  }
+}
+
+/* ---- Стены и фасад ---- */
+{
+  const wallC=0xdfe4ea,panOpts={rough:0.6,opacity:0.30};
+  for(let i=0;i<8;i++){const xc=i*3+1.5;box(2.94,COL_H-0.2,0.18,xc,FFL+COL_H/2,-0.09,wallC,gWalls,panOpts)}
+  for(let i=0;i<8;i++){const xc=i*3+1.5;box(2.94,COL_H-0.2,0.18,xc,FFL+COL_H/2,L+0.09,wallC,gWalls,panOpts)}
+  for(let j=0;j<15;j++){const zc=j*3+1.5;if(zc>L-1)break;box(0.18,COL_H-0.2,2.94,-0.09,FFL+COL_H/2,zc,wallC,gWalls,panOpts)}
+  for(let j=0;j<14;j++){const zc=AUX+j*3+1.5;if(zc>L-1)break;box(0.18,COL_H-0.2,2.94,W+0.09,FFL+COL_H/2,zc,wallC,gWalls,panOpts)}
+  for(let j=0;j<15;j++){const zc=j*3+1.5;if(zc>L-1)break;box(0.18,COL_H-0.2,2.94,W+AUX,FFL+COL_H/2,zc,wallC,gWalls,panOpts)}
+  box(AUX,COL_H-0.2,0.18,W+AUX/2,FFL+COL_H/2,-0.09,wallC,gWalls,panOpts);
+  box(1.6,2.2,0.14,4.1,FFL+1.1,-0.12,0x8a97a5,gWalls,{rough:0.5});
+}
+/* ---- Вспомогательный блок (3 этажа) ---- */
+{
+  const bx0=W+0.2,bx1=W+AUX-0.2,bz0=6,bz1=L,FH=3.1;
+  const auxM=0xcfd6de;
+  for(let f=0;f<3;f++){
+    box(bx1-bx0,0.14,bz1-bz0,(bx0+bx1)/2,FFL+f*FH+FH-0.07,(bz0+bz1)/2,0xb8c0ca,gAux,{rough:0.8});
+  }
+  box(bx1-bx0+0.3,0.5,bz1-bz0+0.3,(bx0+bx1)/2,FFL+3*FH+0.25,(bz0+bz1)/2,auxM,gAux,{rough:0.7,opacity:0.45});
+  box(0.14,3*FH,bz1-bz0,bx0,FFL+1.5*FH,(bz0+bz1)/2,auxM,gAux,{opacity:0.28,rough:0.55});
+  box(0.14,3*FH,bz1-bz0,bx1,FFL+1.5*FH,(bz0+bz1)/2,auxM,gAux,{opacity:0.28,rough:0.55});
+  box(bx1-bx0,3*FH,0.14,(bx0+bx1)/2,FFL+1.5*FH,bz0,auxM,gAux,{opacity:0.28,rough:0.55});
+  box(bx1-bx0,3*FH,0.14,(bx0+bx1)/2,FFL+1.5*FH,bz1,auxM,gAux,{opacity:0.28,rough:0.55});
+  for(let f=0;f<3;f++)for(let k=0;k<6;k++){
+    const wz=bz0+2+k*6.2;
+    box(0.06,1.3,1.7,bx1+0.08,FFL+f*FH+1.9,wz,0x3a5f8a,gAux,{opacity:0.85,rough:0.3});
+  }
+}
+
+/* ---- Поле 38×19 ---- */
+{
+  const fx0=2.5,fx1=21.5,fz0=6,fz1=44;
+  box(fx1-fx0,0.06,fz1-fz0,(fx0+fx1)/2,FFL+0.03,(fz0+fz1)/2,0x3e9e4f,gField,{rough:0.9});
+  const lc=0xffffff,y=FFL+0.07;
+  const mk=[];
+  mk.push([[fx0+0.3,y,fz0+0.3],[fx1-0.3,y,fz0+0.3]]);
+  mk.push([[fx0+0.3,y,fz1-0.3],[fx1-0.3,y,fz1-0.3]]);
+  mk.push([[fx0+0.3,y,fz0+0.3],[fx0+0.3,y,fz1-0.3]]);
+  mk.push([[fx1-0.3,y,fz0+0.3],[fx1-0.3,y,fz1-0.3]]);
+  mk.push([[fx0+0.3,y,(fz0+fz1)/2],[fx1-0.3,y,(fz0+fz1)/2]]);
+  makeRods(mk,0.05,lc,gField,{rough:0.6,metal:0});
+  const ring=new THREE.Mesh(new THREE.RingGeometry(2.6,2.75,48),new THREE.MeshStandardMaterial({color:lc,roughness:0.6}));
+  ring.rotation.x=-Math.PI/2;ring.position.set((fx0+fx1)/2,y,(fz0+fz1)/2);gField.add(ring);
+  [fz0+0.3,fz1-0.3].forEach(gz=>{
+    const gw=5,gh=2.2,dir=gz<25?1:-1;
+    box(0.08,gh,gw,12,FFL+gh/2,gz,0xe8ecf0,gField);
+    box(0.08,gh,0.08,12,FFL+gh/2,gz-dir*0.0+gw/2*(dir>0?1:-1),0xe8ecf0,gField);
+    box(1.2,0.05,gw+0.3,12+dir*0.6,FFL+gh+0.02,gz,0xe8ecf0,gField,{opacity:0.4});
+  });
+}
+
+/* ---- Входная группа: навес, лестница, скульптуры ---- */
+{
+  const CTOP=FFL+3.2;
+  const er=[],en=[];
+  [[0.9,0],[7.3,0],[0.9,-3.0],[7.3,-3.0]].forEach(p=>{
+    en.push([p[0],FFL,p[1]],[p[0],CTOP,p[1]]);
+    er.push([[p[0],FFL,p[1]],[p[0],CTOP,p[1]]);
+  });
+  for(let i=0;i<=2;i++){
+    const x=0.9+i*3.2;
+    er.push([[x,CTOP,0],[x,CTOP,-3.0]]);
+  }
+  er.push([[0.9,CTOP,0],[7.3,CTOP,0]]);
+  er.push([[0.9,CTOP,-3.0],[7.3,CTOP,-3.0]]);
+  er.push([[0.9,CTOP,0],[0.9,CTOP,-3.0]]);
+  er.push([[7.3,CTOP,0],[7.3,CTOP,-3.0]]);
+  er.push([[0.9,CTOP,0],[7.3,CTOP,-3.0]]);
+  er.push([[7.3,CTOP,0],[0.9,CTOP,-3.0]]);
+  makeRods(er,0.05,0x2456a8,gEnt,{rough:0.4,metal:0.5});
+  makeNodes(en,0.09,0x1a3a78,gEnt);
+  box(7.6,0.3,4.2,4.1,CTOP+0.15,-1.5,0xe06a1e,gEnt,{rough:0.5});
+  box(7.4,0.08,4.0,4.1,CTOP+0.34,-1.5,0x9fc3dd,gEnt,{opacity:0.4,rough:0.15});
+  /* лестница */
+  for(let s=0;s<15;s++){
+    const h=FFL-0.15*(s+1),zd=PLZ0+0.2-s*0.31;
+    box(3.0,0.15,0.34,3.8,h/2,zd,0xc4ccd4,gEnt,{rough:0.85});
+  }
+  const rail=[];
+  for(let s=0;s<6;s++){
+    const h=FFL-0.15*(s*2.5+1),zd=PLZ0+0.2-s*2.5*0.31;
+    rail.push([[2.25,h+0.9,zd],[2.25,h,zd]]);
+    rail.push([[5.35,h+0.9,zd],[5.35,h,zd]]);
+  }
+  rail.push([[2.25,FFL+0.9,PLZ0+0.2],[2.25,0.9,PLZ0-4.45]]);
+  rail.push([[5.35,FFL+0.9,PLZ0+0.2],[5.35,0.9,PLZ0-4.45]]);
+  makeRods(rail,0.035,0x5a6a7a,gEnt,{rough:0.4,metal:0.6});
+
+  /* скульптуры спортсменов (бронза), лицом к гостям */
+  const bronze=0x7a5a34;
+  function athlete(kind){
+    const g=new THREE.Group();
+    box(0.72,0.75,0.72,0,0.375,0,0x9aa2ac,g,{rough:0.85});
+    const rods=[],torso=[];
+    if(kind==='run'){
+      torso.push([[0,0.75+0.55,0.05],[0,0.75+1.35,0.22]]);
+      rods.push([[0.12,0.75+0.9,0.05],[0.14,0.75+0.5,0.42]],[[0.14,0.75+0.5,0.42],[0.15,0.75+0.06,0.55]]);
+      rods.push([[-0.12,0.75+0.9,-0.02],[-0.16,0.75+0.45,-0.38]],[[-0.16,0.75+0.45,-0.38],[-0.18,0.75+0.35,-0.62]]);
+      rods.push([[0.16,0.75+1.42,0.16],[0.3,0.75+1.15,-0.15]],[[0.3,0.75+1.15,-0.15],[0.34,0.75+0.95,-0.4]]);
+      rods.push([[-0.16,0.75+1.42,0.16],[-0.28,0.75+1.2,0.42]],[[-0.28,0.75+1.2,0.42],[-0.3,0.75+1.05,0.62]]);
+      makeRods(torso,0.14,bronze,g,{rough:0.32,metal:0.8});
+      makeRods(rods,0.05,bronze,g,{rough:0.32,metal:0.8});
+      makeNodes([[0,0.75+1.6,0.28]],0.135,bronze,g);
+    }else{
+      torso.push([[0,0.75+0.55,0],[0,0.75+1.32,0.08]]);
+      rods.push([[0.12,0.75+0.9,0.02],[0.2,0.75+0.6,0.35]],[[0.2,0.75+0.6,0.35],[0.24,0.75+0.25,0.62]]);
+      rods.push([[-0.12,0.75+0.9,-0.02],[-0.14,0.75+0.45,0.02]],[[-0.14,0.75+0.45,0.02],[-0.15,0.75+0.06,0.05]]);
+      rods.push([[0.16,0.75+1.4,0.06],[0.45,0.75+1.25,-0.1]],[[0.45,0.75+1.25,-0.1],[0.6,0.75+1.15,-0.2]]);
+      rods.push([[-0.16,0.75+1.4,0.06],[-0.4,0.75+1.3,0.2]],[[-0.4,0.75+1.3,0.2],[-0.55,0.75+1.28,0.32]]);
+      makeRods(torso,0.14,bronze,g,{rough:0.32,metal:0.8});
+      makeRods(rods,0.05,bronze,g,{rough:0.32,metal:0.8});
+      makeNodes([[0,0.75+1.55,0.12]],0.135,bronze,g);
+      makeNodes([[0.26,0.75+0.14,0.92]],0.15,0x30363e,g);
+    }
+    return g;
+  }
+  [['run',1.35],['kick',6.85]].forEach(([kind,px])=>{
+    const sg=athlete(kind);
+    sg.position.set(px,FFL,PLZ0+0.8);
+    sg.rotation.y=Math.PI;
+    gEnt.add(sg);
+  });
+}
+
+/* ---- Флаги на главном фасаде ---- */
+let flagMeshes=[];
+{
+  function lion2d(ctx,x,y,s,c){ctx.fillStyle=c;ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+    ctx.beginPath();ctx.moveTo(0,26);ctx.bezierCurveTo(-16,20,-18,4,-8,-6);ctx.bezierCurveTo(-14,-14,-8,-24,0,-20);ctx.bezierCurveTo(4,-28,16,-26,16,-16);ctx.bezierCurveTo(24,-12,22,-2,14,2);ctx.bezierCurveTo(20,8,16,20,8,22);ctx.lineTo(4,14);ctx.lineTo(-2,22);ctx.closePath();ctx.fill();ctx.restore();}
+  function deer2d(ctx,x,y,s,c){ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineWidth=3.2*s;ctx.lineCap='round';ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+    ctx.beginPath();ctx.ellipse(0,4,7,10,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(0,-10,4.5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.moveTo(-3,-13);ctx.lineTo(-9,-26);ctx.moveTo(-9,-26);ctx.lineTo(-14,-24);ctx.moveTo(-9,-26);ctx.lineTo(-9,-32);ctx.moveTo(-6.5,-19);ctx.lineTo(-12,-18);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(3,-13);ctx.lineTo(9,-26);ctx.moveTo(9,-26);ctx.lineTo(14,-24);ctx.moveTo(9,-26);ctx.lineTo(9,-32);ctx.moveTo(6.5,-19);ctx.lineTo(12,-18);ctx.stroke();ctx.restore();}
+  function koch2d(ctx,x,y,s,c){ctx.fillStyle=c;ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+    ctx.beginPath();ctx.ellipse(0,0,11,8,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(10,-6,5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.moveTo(13,-6);ctx.lineTo(19,-4);ctx.lineTo(13,-2);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(-9,4);ctx.lineTo(-20,10);ctx.lineTo(-16,0);ctx.lineTo(-21,-4);ctx.lineTo(-9,-3);ctx.closePath();ctx.fill();
+    ctx.lineWidth=2.4*s;ctx.strokeStyle=c;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(-3,7);ctx.lineTo(-3,15);ctx.moveTo(3,7);ctx.lineTo(3,15);ctx.stroke();ctx.restore();}
+  function flagTex(kind){
+    const cv=document.createElement('canvas');cv.width=512;cv.height=341;
+    const ctx=cv.getContext('2d');
+    if(kind==='ru'){
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,512,114);
+      ctx.fillStyle='#0039a6';ctx.fillRect(0,114,512,113);
+      ctx.fillStyle='#d52b1e';ctx.fillRect(0,227,512,114);
+    }else if(kind==='kray'){
+      ctx.fillStyle='#e63312';ctx.fillRect(0,0,512,341);
+      ctx.fillStyle='#1b6fd0';ctx.fillRect(196,0,120,341);
+      lion2d(ctx,256,170,3.4,'#f7d416');
+    }else{
+      ctx.fillStyle='#2f7fd0';ctx.fillRect(0,0,512,341);
+      ctx.fillStyle='#ffffff';ctx.beginPath();ctx.moveTo(0,260);ctx.lineTo(512,200);ctx.lineTo(512,341);ctx.lineTo(0,341);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#f2b705';ctx.beginPath();ctx.arc(140,110,34,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#f2b705';ctx.lineWidth=10;
+      for(let i=0;i<8;i++){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(140+Math.cos(a)*42,110+Math.sin(a)*42);ctx.lineTo(140+Math.cos(a)*58,110+Math.sin(a)*58);ctx.stroke();}
+      deer2d(ctx,300,150,2.6,'#123a6b');
+      koch2d(ctx,300,272,2.3,'#123a6b');
+    }
+    const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t;
+  }
+  [['dud',0],['ru',12],['kray',24]].forEach(([kind,fx])=>{
+    const fz=0,base=yB(fx);
+    const mast=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.06,6.2,10),new THREE.MeshStandardMaterial({color:0xc8ccd2,roughness:0.35,metalness:0.7}));
+    mast.position.set(fx,base+3.1,fz);mast.castShadow=true;gFlags.add(mast);
+    const ball=new THREE.Mesh(new THREE.SphereGeometry(0.11,12,10),new THREE.MeshStandardMaterial({color:0xf2c14e,roughness:0.3,metalness:0.8}));
+    ball.position.set(fx,base+6.32,fz);gFlags.add(ball);
+    const geo=new THREE.PlaneGeometry(1.8,1.2,18,8);geo.translate(0.9,0,0);
+    const flag=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({map:flagTex(kind),side:THREE.DoubleSide,roughness:0.85,metalness:0}));
+    flag.position.set(fx,base+5.5,fz);flag.castShadow=true;
+    gFlags.add(flag);flagMeshes.push(flag);
+  });
+}
+function waveFlags(time){
+  for(const m of flagMeshes){
+    const pos=m.geometry.attributes.position;
+    for(let i=0;i<pos.count;i++){
+      const x=pos.getX(i);
+      pos.setZ(i,Math.sin(x*3.2+time*3.4)*0.09*(x/1.8)+Math.sin(x*6.5+time*5.2)*0.03*(x/1.8));
+    }
+    pos.needsUpdate=true;m.geometry.computeVertexNormals();
+  }
+}
+/* ================= РЕЕСТРЫ МАТЕРИАЛОВ (для подсветки фаз) ================= */
+const matsOf=g=>{const s=new Set();g.traverse(o=>{if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{m.transparent=true;m.needsUpdate=true;s.add(m)})}});return [...s]};
+const wallMats=matsOf(gWalls);
+const skinMats=matsOf(gRoofSkin);
+const shieldMats=matsOf(gShields);
+const dimMats=[...matsOf(gCols),...matsOf(gRoof),...matsOf(gAux),...matsOf(gEnt),...matsOf(gFloor)];
+
+/* ================= АРКТИЧЕСКИЙ СНЕГ ================= */
+const SNOW_N=850;
+const sPos=new Float32Array(SNOW_N*3),sVel=new Float32Array(SNOW_N);
+for(let i=0;i<SNOW_N;i++){
+  sPos[i*3]=-45+Math.random()*115;
+  sPos[i*3+1]=Math.random()*30;
+  sPos[i*3+2]=-35+Math.random()*115;
+  sVel[i]=1.1+Math.random()*1.7;
+}
+const snowGeo=new THREE.BufferGeometry();
+snowGeo.setAttribute('position',new THREE.BufferAttribute(sPos,3));
+const snow=new THREE.Points(snowGeo,new THREE.PointsMaterial({color:0xffffff,size:0.14,transparent:true,opacity:0.75,depthWrite:false}));
+scene.add(snow);
+
+/* ================= РЕЖИССУРА РОЛИКА ================= */
+const T=64;
+const camCurve=new THREE.CatmullRomCurve3([
+  V(-46,30,-40),V(-30,13,-8),V(4.5,4.2,-15),V(13,4.6,-8),
+  V(17,6.5,10),V(32,26,0),V(-16,3.0,-16),V(-54,52,62)
+],true,'centripetal');
+const tgtCurve=new THREE.CatmullRomCurve3([
+  V(12,6,23),V(12,8,18),V(4.5,3.8,-0.5),V(12,4,22),
+  V(12,3.2,32),V(12,12.8,20),V(12,1.8,18),V(12,6,20)
+],true,'centripetal');
+
+const PH=[
+ {t0:0.000,t1:0.125,card:'open',
+  cap:['Спортзал 24 × 46 м для Арктики','г. Дудинка, Красноярский край · пространственные конструкции МАРХИ (ПСПК)']},
+ {t0:0.125,t1:0.250,
+  cap:['Единый пространственный каркас','Колонны △700 и △1200 · плиты ПСПК h = 2,12 м · на фасаде — флаги России, Красноярского края и Дудинки']},
+ {t0:0.250,t1:0.375,
+  cap:['Входная группа','Навес, парадная лестница и бронзовые скульптуры спортсменов встречают гостей']},
+ {t0:0.375,t1:0.500,wall:0.07,
+  cap:['Внутренний объём','Поле 38 × 19 м для мини-футбола · вспомогательный блок в 3 этажа: раздевалки, душевые, инвентарная']},
+ {t0:0.500,t1:0.625,wall:0.12,skin:0.05,
+  cap:['Покрытие со вспарушиванием f = 900 мм','Снеговой район VI: расчётная нагрузка 4,2 кПа · естественный сход снега и воды с кровли']},
+ {t0:0.625,t1:0.750,dim:0.10,shield:0.08,wall:0.06,skin:0.05,
+  cap:['Пространственный фундамент 27 × 48 м','Проветриваемое подполье 2,12 м — вечная мерзлота не оттаивает · давление на грунт всего ≈ 6,5 кПа']},
+ {t0:0.750,t1:0.875,
+  cap:['Логистика поставки','Завод в Красноярске → река Енисей → Дудинка · 1 989 км · контейнеры 20 футов, узлы до 60 кг']},
+ {t0:0.875,t1:1.001,card:'close',
+  cap:['Форум «Россия — спортивная держава»','Красноярск · проект готов к реализации']}
+];
+const CARDS={
+ open:{kick:'Форум «Россия — спортивная держава» · Красноярск',title:'СПОРТЗАЛ 24 × 46 м',sub:'Быстровозводимый зал для Арктики на пространственных конструкциях МАРХИ · г. Дудинка, Таймыр'},
+ close:{kick:'Проект готов к реализации',title:'Форум «Россия — спортивная держава»',sub:'Дудинка · Таймыр · Красноярский край · демонстрация повторяется автоматически'}
+};
+
+const capWrap=document.getElementById('capWrap'),capTitle=document.getElementById('capTitle'),capSub=document.getElementById('capSub');
+const cardEl=document.getElementById('card'),cardBG=document.getElementById('cardBG');
+const cKick=document.getElementById('cKick'),cTitle=document.getElementById('cTitle'),cSub=document.getElementById('cSub');
+const prog=document.getElementById('prog'),progWrap=document.getElementById('progWrap');
+const pauseHint=document.getElementById('pauseHint');
+PH.slice(1,-1).forEach(p=>{
+  const tk=document.createElement('div');tk.className='progTick';tk.style.left=(p.t0*100)+'%';progWrap.appendChild(tk);
+});
+
+let curPhase=-1,capTimer=null;
+function phaseAt(t){for(let i=0;i<PH.length;i++){if(t>=PH[i].t0&&t<PH[i].t1)return i}return PH.length-1}
+function setPhase(i){
+  curPhase=i;const p=PH[i];
+  capWrap.classList.add('fade');
+  clearTimeout(capTimer);
+  capTimer=setTimeout(()=>{capTitle.textContent=p.cap[0];capSub.textContent=p.cap[1];capWrap.classList.remove('fade')},280);
+  if(p.card){
+    const c=CARDS[p.card];
+    cKick.textContent=c.kick;cTitle.textContent=c.title;cSub.textContent=c.sub;
+    cardEl.classList.add('show');cardBG.classList.add('show');
+  }else{
+    cardEl.classList.remove('show');cardBG.classList.remove('show');
+  }
+}
+capTitle.textContent=PH[0].cap[0];capSub.textContent=PH[0].cap[1];
+
+/* ================= УПРАВЛЕНИЕ ================= */
+let paused=false;
+document.getElementById('exitBtn').addEventListener('click',()=>{location.href='index.html'});
+addEventListener('keydown',e=>{
+  if(e.key==='Escape')location.href='index.html';
+  if(e.code==='Space'){e.preventDefault();paused=!paused;
+    pauseHint.classList.toggle('paused',paused);
+    pauseHint.textContent=paused?'Пауза · Пробел — продолжить · Esc — выход':'Пробел — пауза · Esc — выход из демонстрации';}
+});
+addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+
+/* ================= ЦИКЛ ================= */
+const startFrac=Math.min(0.999,Math.max(0,parseFloat(new URLSearchParams(location.search).get('t'))||0));
+let acc=startFrac*T;
+const cur={wall:0.30,skin:0.22,dim:1,shield:0.5};
+let last=performance.now();
+const cp=new THREE.Vector3(),ct=new THREE.Vector3();
+
+function animate(now){
+  requestAnimationFrame(animate);
+  const dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(!paused)acc+=dt;
+  const t=(acc/T)%1;
+
+  camCurve.getPoint(t,cp);tgtCurve.getPoint(t,ct);
+  camera.position.copy(cp);camera.lookAt(ct);
+
+  const pi=phaseAt(t);
+  if(pi!==curPhase)setPhase(pi);
+  const p=PH[pi];
+  const tgt={wall:p.wall??0.30,skin:p.skin??0.22,dim:p.dim??1,shield:p.shield??0.5};
+  const k=Math.min(1,dt*2.4);
+  cur.wall+=(tgt.wall-cur.wall)*k;cur.skin+=(tgt.skin-cur.skin)*k;
+  cur.dim+=(tgt.dim-cur.dim)*k;cur.shield+=(tgt.shield-cur.shield)*k;
+  wallMats.forEach(m=>m.opacity=cur.wall);
+  skinMats.forEach(m=>m.opacity=cur.skin);
+  shieldMats.forEach(m=>m.opacity=cur.shield);
+  dimMats.forEach(m=>m.opacity=cur.dim);
+
+  waveFlags(now/1000);
+
+  const pos=snowGeo.attributes.position.array;
+  for(let i=0;i<SNOW_N;i++){
+    pos[i*3+1]-=sVel[i]*dt;
+    pos[i*3]+=Math.sin(now/900+i)*dt*0.5;
+    if(pos[i*3+1]<0){pos[i*3+1]=28+Math.random()*2;pos[i*3]=-45+Math.random()*115;pos[i*3+2]=-35+Math.random()*115}
+  }
+  snowGeo.attributes.position.needsUpdate=true;
+
+  prog.style.width=(t*100).toFixed(2)+'%';
+  renderer.render(scene,camera);
+}
+requestAnimationFrame(animate);
+</script>
+<script>
+(function(){
+  const nav=document.getElementById('modNav'),btn=document.getElementById('modNavBtn');
+  const cur=(location.pathname.split('/').pop()||'index.html').split('?')[0];
+  nav.querySelectorAll('.mnItem').forEach(a=>{if(a.dataset.page===cur)a.classList.add('cur')});
+  const open=()=>{nav.classList.add('open');btn.setAttribute('aria-expanded','true')};
+  const close=()=>{nav.classList.remove('open');btn.setAttribute('aria-expanded','false')};
+  btn.addEventListener('click',e=>{e.stopPropagation();nav.classList.contains('open')?close():open()});
+  document.getElementById('modNavClose').addEventListener('click',close);
+  document.getElementById('modNavBack').addEventListener('click',()=>{location.href='index.html'});
+  document.addEventListener('pointerdown',e=>{if(!nav.contains(e.target))close()});
+  addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+})();
+</script>
+</body>
+</html>
