@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ТЭП · Технико-экономические показатели · Спортзал 24×46 м, Дудинка</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#10151f;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#dbe7ff;min-height:100vh;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+  radial-gradient(900px 500px at 85% -10%,rgba(46,111,158,.20),transparent 60%),
+  radial-gradient(800px 480px at -10% 30%,rgba(210,30,43,.10),transparent 60%),
+  radial-gradient(700px 500px at 50% 110%,rgba(242,193,78,.08),transparent 60%),#10151f}
+/* ===== NAV ===== */
+#modNav{position:fixed;top:14px;left:14px;z-index:2000;font-family:'Segoe UI',system-ui,-apple-system,sans-serif}
+#modNavBtn{display:flex;align-items:center;gap:9px;padding:10px 15px;border-radius:12px;border:1px solid rgba(140,190,255,.35);background:rgba(13,20,32,.88);backdrop-filter:blur(8px);color:#dbe8ff;font-size:13px;font-weight:600;letter-spacing:.2px;cursor:pointer;box-shadow:0 4px 18px rgba(10,20,40,.35);transition:border-color .15s,box-shadow .15s,background .15s}
+#modNavBtn:hover{border-color:rgba(160,205,255,.7);box-shadow:0 6px 24px rgba(10,20,40,.45)}
+#modNav.open #modNavBtn{background:rgba(22,32,50,.94);border-color:rgba(160,205,255,.8)}
+.burger{position:relative;width:16px;height:12px;flex:none}
+.burger i{position:absolute;left:0;width:100%;height:2px;border-radius:2px;background:#9ec7ff;transition:transform .28s cubic-bezier(.2,.8,.3,1),top .28s cubic-bezier(.2,.8,.3,1),opacity .2s}
+.burger i:nth-child(1){top:0}.burger i:nth-child(2){top:5px}.burger i:nth-child(3){top:10px}
+#modNav.open .burger i:nth-child(1){top:5px;transform:rotate(45deg)}
+#modNav.open .burger i:nth-child(2){opacity:0}
+#modNav.open .burger i:nth-child(3){top:5px;transform:rotate(-45deg)}
+#modNavMenu{position:absolute;top:calc(100% + 10px);left:0;width:332px;max-width:calc(100vw - 28px);max-height:calc(100vh - 90px);overflow:auto;background:rgba(13,20,32,.96);backdrop-filter:blur(12px);border:1px solid rgba(140,190,255,.3);border-radius:14px;box-shadow:0 18px 50px rgba(5,12,26,.55);padding:8px;opacity:0;transform:translateY(-10px) scale(.98);pointer-events:none;transition:opacity .22s cubic-bezier(.2,.8,.3,1),transform .22s cubic-bezier(.2,.8,.3,1)}
+#modNav.open #modNavMenu{opacity:1;transform:none;pointer-events:auto}
+.mnHead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 6px 10px;border-bottom:1px solid rgba(140,190,255,.14);margin-bottom:6px}
+.mnTitle{font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#7f9cc9}
+.mnBack,.mnClose{width:26px;height:26px;flex:none;border-radius:8px;border:1px solid rgba(140,190,255,.25);background:rgba(30,44,66,.6);color:#9ec7ff;font-size:14px;line-height:1;cursor:pointer;transition:background .15s,color .15s}
+.mnBack:hover,.mnClose:hover{background:rgba(58,84,120,.8);color:#fff}
+.mnItem{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;text-decoration:none;color:#c9dcf6;border:1px solid transparent;transition:background .15s,border-color .15s,transform .15s}
+.mnItem:hover{background:rgba(46,68,102,.55);border-color:rgba(140,190,255,.25);transform:translateX(2px)}
+.mnItem:active{transform:translateX(2px) scale(.99)}
+.mnIco{flex:none;width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(46,80,140,.45);border:1px solid rgba(140,190,255,.22);color:#9ec7ff}
+.mnTxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.mnTxt b{font-size:13px;font-weight:600;color:#eaf2ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mnTxt span{font-size:11px;color:#8aa4cc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mnArr{flex:none;color:#5f7fae;font-size:13px;transition:transform .15s,color .15s}
+.mnItem:hover .mnArr{transform:translateX(3px);color:#bcd6ff}
+.mnItem.cur{background:rgba(38,80,58,.5);border-color:rgba(80,220,160,.35)}
+.mnItem.cur .mnIco{background:rgba(46,140,96,.5);border-color:rgba(80,220,160,.4);color:#7dffc4}
+.mnItem.cur b::after{content:"\00b7 вы здесь";color:#3ecf8e;font-size:11px;font-weight:600;margin-left:6px}
+@media (max-width:640px){
+#modNav{top:calc(10px + env(safe-area-inset-top));left:10px}
+#modNavBtn{padding:9px 11px}
+#modNavBtn .mnLbl{display:none}
+}
+/* ===== СТРАНИЦА ТЭП ===== */
+.wrap{max-width:1240px;margin:0 auto;padding:96px 22px 60px}
+.hero{position:relative;border:1px solid rgba(140,190,255,.25);border-left:5px solid #d21e2b;border-radius:18px;background:linear-gradient(120deg,rgba(22,34,54,.92),rgba(13,20,32,.78));backdrop-filter:blur(10px);padding:34px 38px;margin-bottom:26px;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-70px;top:-70px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(242,193,78,.16),transparent 65%);pointer-events:none}
+.kick{font-size:12px;font-weight:700;letter-spacing:2.6px;text-transform:uppercase;color:#f2c14e}
+.hero h1{font-size:clamp(26px,3.6vw,44px);font-weight:800;color:#fff;margin:10px 0 8px;line-height:1.12}
+.hero p{font-size:clamp(13px,1.5vw,16px);color:#a9c8f5;line-height:1.55;max-width:900px}
+.secTitle{display:flex;align-items:center;gap:12px;margin:38px 0 16px;font-size:clamp(18px,2.2vw,24px);font-weight:700;color:#eaf2ff}
+.secTitle::before{content:"";width:5px;height:26px;border-radius:3px;background:linear-gradient(180deg,#d21e2b,#f2c14e)}
+.secNote{font-size:12.5px;color:#8aa4cc;margin:-8px 0 16px 17px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px}
+.kpi{position:relative;border:1px solid rgba(140,190,255,.22);border-radius:14px;background:rgba(19,28,44,.72);padding:18px 18px 15px;overflow:hidden;transition:transform .18s,border-color .18s,box-shadow .18s}
+.kpi:hover{transform:translateY(-3px);border-color:rgba(242,193,78,.45);box-shadow:0 12px 30px rgba(5,12,26,.45)}
+.kpi .lab{font-size:11.5px;letter-spacing:1.1px;text-transform:uppercase;color:#8aa4cc;font-weight:600}
+.kpi .val{font-size:clamp(24px,2.6vw,33px);font-weight:800;color:#fff;margin:7px 0 3px;line-height:1.05;font-variant-numeric:tabular-nums}
+.kpi .val small{font-size:.55em;font-weight:600;color:#9ec7ff;margin-left:2px}
+.kpi .sub{font-size:12px;color:#7f9cc9;line-height:1.4}
+.kpi .bar{position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,#2e6f9e,#2fa3b0)}
+.kpi.gold .bar{background:linear-gradient(180deg,#d21e2b,#f2c14e)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:16px}
+.panel{border:1px solid rgba(140,190,255,.22);border-radius:16px;background:rgba(19,28,44,.72);padding:20px 22px;backdrop-filter:blur(8px)}
+.panel h3{font-size:15.5px;font-weight:700;color:#eaf2ff;margin-bottom:3px}
+.panel .sub{font-size:12px;color:#8aa4cc;margin-bottom:14px;line-height:1.45}
+.chartBox{position:relative;height:300px}
+.chartBox.tall{height:340px}
+table.tep{width:100%;border-collapse:collapse;font-size:13.5px}
+table.tep th{position:sticky;top:0;background:rgba(22,34,54,.97);color:#9ec7ff;text-transform:uppercase;letter-spacing:1px;font-size:11px;text-align:left;padding:11px 14px;border-bottom:2px solid rgba(140,190,255,.25)}
+table.tep td{padding:10px 14px;border-bottom:1px solid rgba(140,190,255,.10);color:#dbe7ff;line-height:1.4;vertical-align:top}
+table.tep td.r{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#fff;white-space:nowrap}
+table.tep tr:hover td{background:rgba(46,68,102,.30)}
+table.tep td.grp{background:rgba(46,80,140,.25);color:#f2c14e;font-weight:700;letter-spacing:.6px;font-size:12px;text-transform:uppercase}
+.tblWrap{border:1px solid rgba(140,190,255,.22);border-radius:16px;background:rgba(19,28,44,.72);overflow:auto;max-height:640px}
+/* логистика: маршрут */
+.route{display:flex;align-items:stretch;gap:0;margin:18px 0 6px;flex-wrap:wrap}
+.rNode{flex:1;min-width:150px;text-align:center;padding:14px 10px;border:1px solid rgba(140,190,255,.25);border-radius:12px;background:rgba(30,44,66,.55);position:relative}
+.rNode b{display:block;font-size:14px;color:#fff;margin-bottom:3px}
+.rNode span{font-size:11.5px;color:#8aa4cc;line-height:1.4;display:block}
+.rLink{flex:none;align-self:center;width:64px;height:2px;background:repeating-linear-gradient(90deg,#f2c14e 0 8px,transparent 8px 14px);position:relative;margin:0 6px}
+.rLink::after{content:"";position:absolute;right:-1px;top:-4px;border:5px solid transparent;border-left-color:#f2c14e}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font-size:12px;color:#dbe8ff;border:1px solid rgba(140,190,255,.28);background:rgba(30,44,66,.55);border-radius:999px;padding:6px 13px;line-height:1.4}
+.chip b{color:#f2c14e;font-weight:700}
+/* этапы монтажа */
+.stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;counter-reset:st}
+.stage{display:flex;gap:12px;align-items:flex-start;border:1px solid rgba(140,190,255,.20);border-radius:12px;background:rgba(19,28,44,.72);padding:13px 15px;transition:transform .15s,border-color .15s}
+.stage:hover{transform:translateY(-2px);border-color:rgba(46,163,176,.5)}
+.stage .num{counter-increment:st;flex:none;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;background:linear-gradient(135deg,#2e6f9e,#2fa3b0)}
+.stage .num::before{content:counter(st)}
+.stage:nth-child(12) .num{background:linear-gradient(135deg,#d21e2b,#f2c14e)}
+.stage .txt{font-size:12.8px;color:#c9dcf6;line-height:1.45;padding-top:2px}
+.stage .txt b{color:#eaf2ff}
+.note{margin-top:26px;font-size:12px;color:#7f9cc9;line-height:1.6;border-top:1px solid rgba(140,190,255,.14);padding-top:16px}
+@media (max-width:640px){
+.wrap{padding:84px 14px 40px}
+.hero{padding:24px 20px}
+.grid2{grid-template-columns:1fr}
+.chartBox{height:260px}
+.rLink{width:2px;height:34px;margin:6px auto;background:repeating-linear-gradient(180deg,#f2c14e 0 8px,transparent 8px 14px)}
+.rLink::after{right:-4px;top:auto;bottom:-1px;border:5px solid transparent;border-top-color:#f2c14e}
+}
+</style>
+<script src="https://unpkg.com/chart.js@4.4.1/dist/chart.umd.js"></script>
+</head>
+<body>
+<nav id="modNav">
+  <button id="modNavBtn" aria-haspopup="true" aria-expanded="false"><span class="burger"><i></i><i></i><i></i></span><span class="mnLbl">Модули проекта</span></button>
+  <div id="modNavMenu" role="menu">
+    <div class="mnHead"><button class="mnBack" id="modNavBack" title="Назад к 3D-модели">‹</button><span class="mnTitle">Модули проекта</span><button class="mnClose" id="modNavClose" title="Закрыть">✕</button></div>
+    <a class="mnItem" href="index.html" data-page="index.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l8.5 4.9v9.2L12 21.5l-8.5-4.9V7.4z"/><path d="M12 12l8.5-4.6M12 12v9.5M12 12L3.5 7.4"/></svg></span><span class="mnTxt"><b>3D-модель зала</b><span>Спортзал 24 × 46 м · Дудинка</span></span><span class="mnArr">&rarr;</span></a>
+    <a class="mnItem" href="assembly.html" data-page="assembly.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M6 19v-5l6-4 6 4v5"/><path d="M12 3v5"/><path d="M9.5 5.5L12 3l2.5 2.5"/></svg></span><span class="mnTxt"><b>Мультипликация сборки</b><span>12 этапов монтажа</span></span><span class="mnArr">&rarr;</span></a>
+    <a class="mnItem" href="render.html" data-page="render.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg></span><span class="mnTxt"><b>Визуализация день/ночь</b><span>Арт-подача объекта</span></span><span class="mnArr">&rarr;</span></a>
+    <a class="mnItem" href="logistics.html" data-page="logistics.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17V8h10v9"/><path d="M13 11h4.5l3 3v3h-3"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/><path d="M3 17.5h2.2M9 17.5h5.6"/></svg></span><span class="mnTxt"><b>Логистика поставки</b><span>Красноярск → Енисей → Дудинка</span></span><span class="mnArr">&rarr;</span></a>
+    <a class="mnItem" href="node.html" data-page="node.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v5M12 16.5v5M2.5 12h5M16.5 12h5M5.6 5.6l3.2 3.2M15.2 15.2l3.2 3.2M18.4 5.6l-3.2 3.2M8.8 15.2l-3.2 3.2"/></svg></span><span class="mnTxt"><b>Узел МАРХИ</b><span>Одноболтовой разъёмный узел</span></span><span class="mnArr">&rarr;</span></a>
+    <a class="mnItem" href="drawings.html" data-page="drawings.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><path d="M3.5 9.5h17M9.5 9.5v11"/><path d="M6.2 6.5h.01M13 14.5h5M13 17h3.5"/></svg></span><span class="mnTxt"><b>Чертежи КЖ-0</b><span>План и разрезы · оформление по ГОСТ</span></span><span class="mnArr">&rarr;</span></a>
+    <a class="mnItem" href="calc.html" data-page="calc.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8.5 6.5h7"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h.01M15.5 18h.01"/></svg></span><span class="mnTxt"><b>Расчётная схема</b><span>Снег VI · ветер IV · СП 20.13330.2016</span></span><span class="mnArr">&rarr;</span></a>
+    <a class="mnItem" href="forum.html" data-page="forum.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M10 8l4.6 3-4.6 3z" fill="currentColor" stroke="none"/><path d="M9 20.5h6"/></svg></span><span class="mnTxt"><b>Форум «Спортивная держава»</b><span>Цикличный ролик для стенда · автодемо</span></span><span class="mnArr">&rarr;</span></a>
+    <a class="mnItem" href="tep.html" data-page="tep.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M2 20h20"/></svg></span><span class="mnTxt"><b>ТЭП проекта</b><span>Показатели · диаграммы · элементная база</span></span><span class="mnArr">&rarr;</span></a>
+  </div>
+</nav>
+<div class="wrap">
+  <header class="hero">
+    <div class="kick">Технико-экономические показатели</div>
+    <h1>Спортивный зал 24 × 46 м для Арктики</h1>
+    <p>г. Дудинка, Красноярский край, Таймыр · быстровозводимое здание на пространственных конструкциях МАРХИ (ПСПК) · снеговой район VI, ветровой район IV, площадка на многолетней мерзлоте. Все показатели согласованы с модулями «Расчётная схема», «Логистика» и «Мультипликация сборки».</p>
+  </header>
+
+  <div class="secTitle">Ключевые показатели</div>
+  <div class="kpis">
+    <div class="kpi"><span class="bar"></span><div class="lab">Площадь застройки</div><div class="val">1 296 <small>м²</small></div><div class="sub">по полю сборных плит 27 × 48 м</div></div>
+    <div class="kpi"><span class="bar"></span><div class="lab">Площадь здания</div><div class="val">1 104 <small>м²</small></div><div class="sub">габарит в осях 24 × 46 м</div></div>
+    <div class="kpi"><span class="bar"></span><div class="lab">Общая площадь помещений</div><div class="val">1 344 <small>м²</small></div><div class="sub">зал + вспомогательный блок в 3 этажа</div></div>
+    <div class="kpi gold"><span class="bar"></span><div class="lab">Спортивное поле</div><div class="val">722 <small>м²</small></div><div class="sub">38 × 19 м, мини-футбол</div></div>
+    <div class="kpi"><span class="bar"></span><div class="lab">Строительный объём</div><div class="val">≈16 700 <small>м³</small></div><div class="sub">с учётом вспарушивания покрытия f = 900 мм</div></div>
+    <div class="kpi"><span class="bar"></span><div class="lab">Высота в коньке</div><div class="val">15,4 <small>м</small></div><div class="sub">чистый пол +2,400 · подполье 2,12 м</div></div>
+    <div class="kpi gold"><span class="bar"></span><div class="lab">Стержней / узлов</div><div class="val">3 223 <small>/</small> 684</div><div class="sub">суммарная длина стержней ≈ 8 970 м</div></div>
+    <div class="kpi gold"><span class="bar"></span><div class="lab">Масса стали каркаса</div><div class="val">≈76 <small>т</small></div><div class="sub">68,8 кг/м² площади здания</div></div>
+  </div>
+
+  <div class="secTitle">Площади и элементная база</div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Структура площади здания</h3>
+      <div class="sub">Площадь в осях 1 104 м². Сверху этого два верхних этажа вспомогательного блока: ещё 240 м² служебных помещений</div>
+      <div class="chartBox"><canvas id="chArea"></canvas></div>
+    </div>
+    <div class="panel">
+      <h3>Элементная база каркаса, стержни</h3>
+      <div class="sub">Посчитано по параметрической модели проекта: модуль 3,0 × 3,0 м, высота плит ПСПК 2,12 м</div>
+      <div class="chartBox"><canvas id="chElem"></canvas></div>
+    </div>
+  </div>
+
+  <div class="secTitle">Климатические воздействия · СП 20.13330.2016</div>
+  <div class="secNote">Дудинка: снеговой район VI, ветровой район IV. Выделено принятое в проекте значение; в скобках расчётная величина с коэффициентом надёжности γf = 1,4</div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Снеговая нагрузка по районам, Sg нормативная</h3>
+      <div class="sub">Район VI: 3,0 кПа нормативная → 4,2 кПа расчётная · на покрытие 1 104 м² это ≈ 4 640 кН снега</div>
+      <div class="chartBox"><canvas id="chSnow"></canvas></div>
+    </div>
+    <div class="panel">
+      <h3>Ветровое давление по районам, w0 нормативное</h3>
+      <div class="sub">Район IV: 0,48 кПа нормативное → ≈ 0,67 кПа расчётное · сдвиг воспринимают 10 колонн △1200 и диск фундамента</div>
+      <div class="chartBox"><canvas id="chWind"></canvas></div>
+    </div>
+  </div>
+
+  <div class="secTitle">Многолетняя мерзлота: запас несущей способности</div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Давление на грунт vs несущая способность</h3>
+      <div class="sub">Пространственный фундамент 27 × 48 м распределяет всю нагрузку здания со снегом до ≈ 6,5 кПа. Даже полностью оттаявший грунт несёт 100–150 кПа: запас ×15–23. Мерзлота не оттаивает благодаря проветриваемому подполью 2,12 м</div>
+      <div class="chartBox"><canvas id="chSoil"></canvas></div>
+    </div>
+    <div class="panel">
+      <h3>Как это работает</h3>
+      <div class="sub">Принцип «зеркала»: фундамент повторяет топологию покрытия</div>
+      <table class="tep">
+        <tr><td>Поле плит под фундаментом</td><td class="r">27 × 48 м</td></tr>
+        <tr><td>Высота пространственного фундамента</td><td class="r">2,12 м</td></tr>
+        <tr><td>Полная нагрузка на фундамент (G + снег)</td><td class="r">≈ 8 180 кН</td></tr>
+        <tr><td>Среднее давление на грунт</td><td class="r">≈ 6,5 кПа</td></tr>
+        <tr><td>Несущая способность оттаявшего грунта</td><td class="r">≥ 100–150 кПа</td></tr>
+        <tr><td>Вентзазор подполья (зимой открыт)</td><td class="r">350 мм</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="secTitle">Логистика поставки</div>
+  <div class="panel">
+    <h3>Завод в Красноярске → река Енисей → Дудинка</h3>
+    <div class="sub">Единственный круглогодичный грузовой путь на Таймыр: речная навигация июнь–сентябрь</div>
+    <div class="route">
+      <div class="rNode"><b>Красноярск</b><span>завод изготовитель · пакетирование стержней и узлов</span></div>
+      <div class="rLink"></div>
+      <div class="rNode"><b>Речной порт</b><span>портальный кран · контейнеры на баржу</span></div>
+      <div class="rLink"></div>
+      <div class="rNode"><b>Енисей · 1 989 км</b><span>баржа с контейнерами 20 фт</span></div>
+      <div class="rLink"></div>
+      <div class="rNode"><b>Порт Дудинка</b><span>выгрузка краном на тягачи</span></div>
+      <div class="rLink"></div>
+      <div class="rNode"><b>Площадка</b><span>монтаж из контейнеров · узлы до 60 кг</span></div>
+    </div>
+    <div class="chips">
+      <span class="chip">Контейнер 20 фт: <b>6,06 × 2,44 × 2,59 м ≈ 33 м³</b></span>
+      <span class="chip">Грузоподъёмность: <b>21–28 т</b></span>
+      <span class="chip">Перевозимый груз: <b>≈ 167 т</b> (сталь 76 т + сэндвич-панели 91 т)</span>
+      <span class="chip">Минимум по грузоподъёмности: <b>6–8 контейнеров</b></span>
+      <span class="chip">Масса одного узла: <b>≤ 60 кг</b>, монтаж без тяжёлых кранов</span>
+    </div>
+  </div>
+
+  <div class="secTitle">Последовательность монтажа · 12 этапов</div>
+  <div class="secNote">Совпадает с модулем «Мультипликация сборки»: покрытие собирается на земле и поднимается на отметку +12,400 единым пакетом</div>
+  <div class="stages">
+    <div class="stage"><span class="num"></span><span class="txt"><b>Инженерная подготовка площадки</b> · планировка без нарушения мерзлоты</span></div>
+    <div class="stage"><span class="num"></span><span class="txt"><b>Сборные ж/б плиты 120 мм</b> · ширина 1,2 м по осям</span></div>
+    <div class="stage"><span class="num"></span><span class="txt"><b>Нижний пояс пространственного фундамента</b> · смещённая сетка на плитах</span></div>
+    <div class="stage"><span class="num"></span><span class="txt"><b>Раскосы и верхний пояс фундамента</b> · готово проветриваемое подполье 2,12 м</span></div>
+    <div class="stage"><span class="num"></span><span class="txt"><b>Пол из сэндвич-панелей</b> · по верхнему поясу, отм. +2,400</span></div>
+    <div class="stage"><span class="num"></span><span class="txt"><b>Ветро-снегозащитные щиты подполья</b> · зазор 350 мм, летом закрываются</span></div>
+    <div class="stage"><span class="num"></span><span class="txt"><b>Колонны △700 и △1200</b> · усиленные по углам и через одну</span></div>
+    <div class="stage"><span class="num"></span><span class="txt"><b>Покрытие со вспарушиванием</b> · сборка на земле → подъём на +12,400</span></div>
+    <div class="stage"><span class="num"></span><span class="txt"><b>Сэндвич-панели ограждения</b> · изнутри каркаса, без мостиков холода</span></div>
+    <div class="stage"><span class="num"></span><span class="txt"><b>Вспомогательный блок 3 этажа + поле</b> · раздевалки, душевые, инвентарная, разметка</span></div>
+    <div class="stage"><span class="num"></span><span class="txt"><b>Входная группа</b> · навес ПСПК, лестница, пандус, скульптуры спортсменов</span></div>
+    <div class="stage"><span class="num"></span><span class="txt"><b>Подъём флагов</b> · Россия, Красноярский край, Дудинка</span></div>
+  </div>
+
+  <div class="secTitle">Сводная таблица ТЭП</div>
+  <div class="tblWrap">
+    <table class="tep">
+      <thead><tr><th>Наименование показателя</th><th>Ед.</th><th style="text-align:right">Значение</th></tr></thead>
+      <tbody>
+        <tr><td colspan="3" class="grp">Объёмно-планировочные</td></tr>
+        <tr><td>Габарит здания в осях</td><td>м</td><td class="r">24 × 46</td></tr>
+        <tr><td>Площадь застройки (поле плит)</td><td>м²</td><td class="r">1 296</td></tr>
+        <tr><td>Площадь здания</td><td>м²</td><td class="r">1 104</td></tr>
+        <tr><td>Общая площадь помещений</td><td>м²</td><td class="r">1 344</td></tr>
+        <tr><td>Спортивное поле (мини-футбол)</td><td>м²</td><td class="r">722 (38 × 19)</td></tr>
+        <tr><td>Вспомогательный блок</td><td>м²</td><td class="r">360 (5 × 24 · 3 этажа)</td></tr>
+        <tr><td>Строительный объём</td><td>м³</td><td class="r">≈ 16 700</td></tr>
+        <tr><td>Высота в коньке от планировки</td><td>м</td><td class="r">15,4</td></tr>
+        <tr><td>Отметка чистого пола / подполье</td><td>м</td><td class="r">+2,400 / 2,12</td></tr>
+        <tr><td colspan="3" class="grp">Конструктив · ПСПК (МАРХИ)</td></tr>
+        <tr><td>Модуль пространственной плиты</td><td>м</td><td class="r">3,0 × 3,0 × 2,12</td></tr>
+        <tr><td>Колонны треугольного сечения</td><td>шт</td><td class="r">18 (△700 · 14, △1200 · 4)</td></tr>
+        <tr><td>Стержней всего / узлов</td><td>шт</td><td class="r">3 223 / 684</td></tr>
+        <tr><td>Суммарная длина стержней</td><td>м</td><td class="r">≈ 8 970</td></tr>
+        <tr><td>Масса стали каркаса</td><td>т</td><td class="r">≈ 76 (68,8 кг/м²)</td></tr>
+        <tr><td>Сэндвич-панели (пол + ограждение)</td><td>т</td><td class="r">≈ 91</td></tr>
+        <tr><td>Сборные ж/б плиты под фундамент</td><td>т</td><td class="r">≈ 158</td></tr>
+        <tr><td>Узел одноболтовой разъёмный</td><td>кг</td><td class="r">≤ 60</td></tr>
+        <tr><td colspan="3" class="grp">Нагрузки и основание</td></tr>
+        <tr><td>Снеговой район VI: Sg норм. / расч.</td><td>кПа</td><td class="r">3,0 / 4,2</td></tr>
+        <tr><td>Ветровой район IV: w0 норм. / расч.</td><td>кПа</td><td class="r">0,48 / 0,67</td></tr>
+        <tr><td>Снег на покрытие (расчётный)</td><td>кН</td><td class="r">≈ 4 640</td></tr>
+        <tr><td>Давление на мерзлый грунт</td><td>кПа</td><td class="r">≈ 6,5</td></tr>
+        <tr><td>Запас по несущей способности грунта</td><td>раз</td><td class="r">× 15–23</td></tr>
+        <tr><td colspan="3" class="grp">Логистика и монтаж</td></tr>
+        <tr><td>Речной путь Красноярск → Дудинка</td><td>км</td><td class="r">1 989 (Енисей)</td></tr>
+        <tr><td>Перевозимый груз (сталь + панели)</td><td>т</td><td class="r">≈ 167</td></tr>
+        <tr><td>Контейнеры 20 фт (по грузоподъёмности)</td><td>шт</td><td class="r">6–8</td></tr>
+        <tr><td>Навигационное окно</td><td>·</td><td class="r">июнь–сентябрь</td></tr>
+        <tr><td>Этапы монтажа</td><td>шт</td><td class="r">12</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    Показатели концептуального проекта. Количество стержней и узлов посчитано по параметрической 3D-модели; масса стали, панелей и плит принята по разложению нагрузок G = 745 + 892 + 1550 + 350 кН из модуля «Расчётная схема». Нагрузки по СП 20.13330.2016. Подлежат уточнению на стадии проектной документации.
+  </div>
+</div>
+
+<script>
+(function(){
+  const nav=document.getElementById('modNav'),btn=document.getElementById('modNavBtn');
+  const cur=(location.pathname.split('/').pop()||'index.html').split('?')[0];
+  nav.querySelectorAll('.mnItem').forEach(a=>{if(a.dataset.page===cur)a.classList.add('cur')});
+  const open=()=>{nav.classList.add('open');btn.setAttribute('aria-expanded','true')};
+  const close=()=>{nav.classList.remove('open');btn.setAttribute('aria-expanded','false')};
+  btn.addEventListener('click',e=>{e.stopPropagation();nav.classList.contains('open')?close():open()});
+  document.getElementById('modNavClose').addEventListener('click',close);
+  document.getElementById('modNavBack').addEventListener('click',()=>{location.href='index.html'});
+  document.addEventListener('pointerdown',e=>{if(!nav.contains(e.target))close()});
+  addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+})();
+</script>
+<script>
+Chart.defaults.color='#a9c8f5';
+Chart.defaults.font.family="'Segoe UI',system-ui,sans-serif";
+Chart.defaults.font.size=12;
+const GRID='rgba(140,190,255,.12)';
+const TT={backgroundColor:'rgba(10,16,28,.92)',borderColor:'rgba(140,190,255,.35)',borderWidth:1,titleColor:'#fff',bodyColor:'#c9dcf6',padding:10,cornerRadius:8};
+
+/* структура площадей */
+new Chart(chArea,{type:'doughnut',data:{
+  labels:['Спортивное поле 722 м²','Вспомогательный блок, 1-й этаж 120 м²','Зоны движения и проходы 262 м²'],
+  datasets:[{data:[722,120,262],backgroundColor:['#3f9e4d','#d97a1e','#2e6f9e'],borderColor:'#10151f',borderWidth:3,hoverOffset:10}]
+},options:{maintainAspectRatio:false,cutout:'58%',
+  plugins:{legend:{position:innerWidth<560?'bottom':'right',labels:{boxWidth:14,padding:12}},
+    tooltip:{...TT,callbacks:{label:c=>' '+c.parsed+' м² ('+(c.parsed/1104*100).toFixed(1)+' %)'}},
+    title:{display:true,text:'Всего 1 104 м² в осях',color:'#8aa4cc',font:{size:11,weight:'normal'},position:'bottom'}}}});
+
+/* элементная база */
+new Chart(chElem,{type:'bar',data:{
+  labels:['Покрытие ПСПК','Фундамент ПСПК','Колонны (18 шт)','Входной навес'],
+  datasets:[{data:[1030,1030,1026,137],backgroundColor:['#2fa3b0','#c07a30','#4a86d8','#d97a1e'],borderRadius:6,barThickness:26}]
+},options:{indexAxis:'y',maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+c.parsed.x.toLocaleString('ru')+' стержней'}},
+    title:{display:true,text:'Узлы: покрытие 288 · фундамент 288 · колонны 108 · итого 684',color:'#8aa4cc',font:{size:11,weight:'normal'},position:'bottom'}},
+  scales:{x:{grid:{color:GRID},ticks:{callback:v=>v.toLocaleString('ru')}},y:{grid:{display:false}}}}});
+
+/* снег по районам */
+const snowVals=[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0];
+new Chart(chSnow,{type:'bar',data:{
+  labels:['I','II','III','IV','V','VI','VII','VIII'],
+  datasets:[{data:snowVals,backgroundColor:snowVals.map((v,i)=>i===5?'#d21e2b':'#2e6f9e'),borderRadius:5}]
+},options:{maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{...TT,callbacks:{title:c=>'Район '+c[0].label,label:c=>' Sg = '+c.parsed.y.toFixed(1)+' кПа норм. → '+(c.parsed.y*1.4).toFixed(1)+' кПа расч.'}},
+    title:{display:true,text:'Дудинка · район VI · расчётная 4,2 кПа',color:'#f2c14e',font:{size:12,weight:'bold'},position:'bottom'}},
+  scales:{y:{grid:{color:GRID},title:{display:true,text:'кПа',color:'#8aa4cc'}},x:{grid:{display:false}}}}});
+
+/* ветер по районам */
+const windVals=[0.17,0.23,0.30,0.38,0.48,0.60,0.73,0.85];
+new Chart(chWind,{type:'bar',data:{
+  labels:['Ia','I','II','III','IV','V','VI','VII'],
+  datasets:[{data:windVals,backgroundColor:windVals.map((v,i)=>i===4?'#d21e2b':'#2e6f9e'),borderRadius:5}]
+},options:{maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{...TT,callbacks:{title:c=>'Район '+c[0].label,label:c=>' w0 = '+c.parsed.y.toFixed(2)+' кПа норм.'}},
+    title:{display:true,text:'Дудинка · район IV · расчётное ≈ 0,67 кПа',color:'#f2c14e',font:{size:12,weight:'bold'},position:'bottom'}},
+  scales:{y:{grid:{color:GRID},title:{display:true,text:'кПа',color:'#8aa4cc'}},x:{grid:{display:false}}}}});
+
+/* запас по грунту */
+new Chart(chSoil,{type:'bar',data:{
+  labels:['Давление от здания со снегом','Оттаявший грунт (мин.)','Мерзлый грунт (ориентир.)'],
+  datasets:[{data:[6.5,100,300],backgroundColor:['#d21e2b','#3f9e4d','#2fa3b0'],borderRadius:6,barThickness:34}]
+},options:{indexAxis:'y',maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+c.parsed.x+' кПа'}},
+    title:{display:true,text:'Запас даже по оттаявшему грунту: × 15',color:'#f2c14e',font:{size:12,weight:'bold'},position:'bottom'}},
+  scales:{x:{type:'logarithmic',grid:{color:GRID},afterBuildTicks:s=>{s.ticks=[1,3,10,30,100,300].map(v=>({value:v}))},ticks:{callback:v=>v+' кПа'}},y:{grid:{display:false}}}}});
+</script>
+</body>
+</html>
