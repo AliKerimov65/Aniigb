@@ -144,6 +144,45 @@ table.tep td.grp{background:rgba(46,80,140,.25);color:#f2c14e;font-weight:700;le
     <div class="kpi gold"><span class="bar"></span><div class="lab">Масса стали каркаса</div><div class="val">≈76 <small>т</small></div><div class="sub">68,8 кг/м² площади здания</div></div>
   </div>
 
+  <div class="secTitle">Стоимостные показатели</div>
+  <div class="secNote">Укрупнённая смета концептуальной стадии в ценах 2025–2026 гг. с учётом северного завоза; количества взяты из модулей проекта, расценки ориентировочные и подлежат уточнению сметой на стадии ПД</div>
+  <div class="kpis">
+    <div class="kpi gold"><span class="bar"></span><div class="lab">Сметная стоимость</div><div class="val">≈81,8 <small>млн ₽</small></div><div class="sub">включая проектные работы и резерв 5 %</div></div>
+    <div class="kpi"><span class="bar"></span><div class="lab">На м² общей площади</div><div class="val">61 <small>тыс ₽/м²</small></div><div class="sub">81,8 млн ₽ / 1 344 м²</div></div>
+    <div class="kpi"><span class="bar"></span><div class="lab">На м² площади здания</div><div class="val">74 <small>тыс ₽/м²</small></div><div class="sub">81,8 млн ₽ / 1 104 м²</div></div>
+    <div class="kpi gold"><span class="bar"></span><div class="lab">Каркас ПСПК в смете</div><div class="val">17,5 <small>млн ₽</small></div><div class="sub">76 т × 230 тыс ₽/т · всего 21 % стоимости</div></div>
+  </div>
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel">
+      <h3>Укрупнённая смета по разделам, млн ₽</h3>
+      <div class="sub">Прямые затраты 74,4 млн ₽ + проектные и ПНР 3,7 млн ₽ + резерв 3,7 млн ₽. Каркас выделен: лёгкая система МАРХИ держит его долю на уровне 21 %</div>
+      <div class="chartBox tall"><canvas id="chCost"></canvas></div>
+    </div>
+    <div class="panel">
+      <h3>Структура стоимости</h3>
+      <div class="sub">Ограждающие конструкции и инженерия весят в смете больше каркаса: типичная картина быстровозводимого здания на системе ПСПК</div>
+      <div class="chartBox tall"><canvas id="chShare"></canvas></div>
+    </div>
+  </div>
+  <div class="tblWrap" style="margin-top:16px">
+    <table class="tep">
+      <thead><tr><th>Раздел затрат</th><th>Количество (из модулей проекта)</th><th>Укрупнённая расценка</th><th style="text-align:right">Стоимость, млн ₽</th></tr></thead>
+      <tbody>
+        <tr><td>Подготовка площадки и ж/б плиты-ленты 120 мм</td><td>1 612 м² + 62 м³</td><td>1 500 ₽/м² · 24 тыс ₽/м³</td><td class="r">4,0</td></tr>
+        <tr><td>Каркас ПСПК: стержни, узлы-коннекторы, АКЗ, монтаж</td><td>76 т · 3 223 стержня · 684 узла</td><td>230 тыс ₽/т</td><td class="r">17,5</td></tr>
+        <tr><td>Сэндвич-панели: кровля, стены, пол</td><td>3 487 м² (91 т)</td><td>6 200 ₽/м²</td><td class="r">21,6</td></tr>
+        <tr><td>Витражное остекление южного торца</td><td>165 м²</td><td>28 тыс ₽/м²</td><td class="r">4,6</td></tr>
+        <tr><td>Инженерные системы: теплоцентр, вентиляция, ВК, электрика, освещение</td><td>40 светильников LED + 6 мачт</td><td>укрупнённо</td><td class="r">14,0</td></tr>
+        <tr><td>Спортивное покрытие, оборудование, телескопические трибуны</td><td>722 м² · 310 мест</td><td>3 500 ₽/м² · 8,5 тыс ₽/место</td><td class="r">6,3</td></tr>
+        <tr><td>Логистика Красноярск → Енисей → Дудинка</td><td>7 контейнеров 20 фт · 1 989 км</td><td>550 тыс ₽/контейнер</td><td class="r">3,9</td></tr>
+        <tr><td>Благоустройство, входная группа, МАФ, флагштоки</td><td>комплект</td><td>укрупнённо</td><td class="r">2,5</td></tr>
+        <tr><td>Проектные работы, авторский надзор, ПНР</td><td>5 % от прямых</td><td>—</td><td class="r">3,7</td></tr>
+        <tr><td>Резерв на непредвиденные (концепт-стадия)</td><td>5 % от прямых</td><td>—</td><td class="r">3,7</td></tr>
+        <tr><td class="grp">ИТОГО сметная стоимость</td><td class="grp"></td><td class="grp"></td><td class="r" style="color:#f2c14e">81,8</td></tr>
+      </tbody>
+    </table>
+  </div>
+
   <div class="secTitle">Площади и элементная база</div>
   <div class="grid2">
     <div class="panel">
@@ -276,7 +315,7 @@ table.tep td.grp{background:rgba(46,80,140,.25);color:#f2c14e;font-weight:700;le
   </div>
 
   <div class="note">
-    Показатели концептуального проекта. Количество стержней и узлов посчитано по параметрической 3D-модели; масса стали, панелей и плит принята по разложению нагрузок G = 745 + 892 + 1550 + 350 кН из модуля «Расчётная схема». Нагрузки по СП 20.13330.2016. Подлежат уточнению на стадии проектной документации.
+    Показатели концептуального проекта. Количество стержней и узлов посчитано по параметрической 3D-модели; масса стали, панелей и плит принята по разложению нагрузок G = 745 + 892 + 1550 + 350 кН из модуля «Расчётная схема». Нагрузки по СП 20.13330.2016. Стоимостные показатели — ориентировочная укрупнённая оценка в ценах 2025–2026 гг.: все количества (76 т стали, 3 487 м² панелей, 165 м² остекления, 62 м³ плит, 7 контейнеров, 310 мест трибун) выведены из модулей проекта, расценки приняты экспертно и вместе с итогом подлежат уточнению сметой на стадии проектной документации.
   </div>
 </div>
 
@@ -347,6 +386,26 @@ new Chart(chSoil,{type:'bar',data:{
   plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+c.parsed.x+' кПа'}},
     title:{display:true,text:'Запас даже по оттаявшему грунту: × 15',color:'#f2c14e',font:{size:12,weight:'bold'},position:'bottom'}},
   scales:{x:{type:'logarithmic',grid:{color:GRID},afterBuildTicks:s=>{s.ticks=[1,3,10,30,100,300].map(v=>({value:v}))},ticks:{callback:v=>v+' кПа'}},y:{grid:{display:false}}}}});
+
+/* укрупнённая смета по разделам */
+const costLab=['Сэндвич-панели 3 487 м²','Каркас ПСПК, 76 т','Инженерные системы','Спорт. оборудование, трибуны','Витраж 165 м²','Площадка и ж/б плиты','Логистика, 7 контейнеров','Проектные + резерв','Благоустройство и МАФ'];
+const costVal=[21.6,17.5,14.0,6.3,4.6,4.0,3.9,7.4,2.5];
+new Chart(chCost,{type:'bar',data:{
+  labels:costLab,
+  datasets:[{data:costVal,backgroundColor:costVal.map((v,i)=>i===1?'#d21e2b':'#2e6f9e'),borderRadius:5,barThickness:22}]
+},options:{indexAxis:'y',maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+c.parsed.x.toFixed(1)+' млн ₽ ('+(c.parsed.x/81.8*100).toFixed(0)+' %)'}},
+    title:{display:true,text:'Итого ≈ 81,8 млн ₽ · каркас выделен красным',color:'#f2c14e',font:{size:12,weight:'bold'},position:'bottom'}},
+  scales:{x:{grid:{color:GRID},ticks:{callback:v=>v+' млн'}},y:{grid:{display:false},ticks:{font:{size:11},autoSkip:false}}}}});
+
+/* структура стоимости */
+new Chart(chShare,{type:'doughnut',data:{
+  labels:['Ограждающие конструкции 32 %','Каркас ПСПК 21 %','Инженерия 17 %','Проект и резерв 9 %','Спорт. оборудование 8 %','Площадка и ж/б 5 %','Логистика 5 %','Благоустройство 3 %'],
+  datasets:[{data:[26.2,17.5,14.0,7.4,6.3,4.0,3.9,2.5],backgroundColor:['#2fa3b0','#d21e2b','#4a86d8','#8fa8cf','#3f9e4d','#c07a30','#d97a1e','#6b7c8c'],borderColor:'#10151f',borderWidth:3,hoverOffset:10}]
+},options:{maintainAspectRatio:false,cutout:'58%',
+  plugins:{legend:{position:innerWidth<560?'bottom':'right',labels:{boxWidth:14,padding:10,font:{size:11.5}}},
+    tooltip:{...TT,callbacks:{label:c=>' '+c.parsed.toFixed(1)+' млн ₽'}},
+    title:{display:true,text:'Всего ≈ 81,8 млн ₽',color:'#8aa4cc',font:{size:11,weight:'normal'},position:'bottom'}}}});
 </script>
 </body>
 </html>
