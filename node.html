@@ -7,7 +7,7 @@
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#0e1420;font-family:'Segoe UI',system-ui,Arial,sans-serif}
 #c{position:absolute;inset:0}
-#panel{position:absolute;top:14px;left:14px;background:rgba(13,20,32,.88);border:1px solid rgba(120,170,255,.25);border-radius:12px;padding:12px 14px;color:#dbe7ff;font-size:12.5px;max-width:300px;backdrop-filter:blur(6px)}
+#panel{position:absolute;z-index:20;top:14px;left:14px;background:rgba(13,20,32,.88);border:1px solid rgba(120,170,255,.25);border-radius:12px;padding:12px 14px;color:#dbe7ff;font-size:12.5px;max-width:300px;backdrop-filter:blur(6px)}
 #panel h1{font-size:14px;margin:0 0 8px;color:#8fc3ff;letter-spacing:.4px}
 #panel .g{margin:8px 0 4px;color:#9db6dd;font-size:11px;text-transform:uppercase;letter-spacing:1px}
 #panel label{display:flex;align-items:center;gap:7px;margin:4px 0;cursor:pointer;white-space:nowrap}
@@ -15,15 +15,17 @@ html,body{margin:0;height:100%;overflow:hidden;background:#0e1420;font-family:'S
 .sw{width:11px;height:11px;border-radius:3px;display:inline-block;flex:none}
 .btn{display:inline-block;margin:4px 4px 0 0;padding:4px 10px;font-size:11px;background:rgba(90,162,255,.12);border:1px solid rgba(90,162,255,.35);color:#bcd6ff;border-radius:8px;cursor:pointer}
 .btn:hover{background:rgba(90,162,255,.25)}
-#hint{position:absolute;bottom:12px;left:14px;color:#8fa8cf;font-size:11.5px;background:rgba(13,20,32,.7);padding:6px 10px;border-radius:8px}
-#spec{position:absolute;top:14px;right:14px;background:rgba(13,20,32,.88);border:1px solid rgba(120,170,255,.25);border-radius:12px;padding:12px 14px;color:#dbe7ff;font-size:12px;max-width:270px;backdrop-filter:blur(6px)}
+#hint{position:absolute;z-index:20;bottom:12px;left:14px;color:#8fa8cf;font-size:11.5px;background:rgba(13,20,32,.7);padding:6px 10px;border-radius:8px}
+#spec{position:absolute;z-index:20;top:14px;right:14px;background:rgba(13,20,32,.88);border:1px solid rgba(120,170,255,.25);border-radius:12px;padding:12px 14px;color:#dbe7ff;font-size:12px;max-width:270px;backdrop-filter:blur(6px)}
 #spec h2{font-size:12.5px;margin:0 0 8px;color:#8fc3ff}
 #spec table{width:100%;border-collapse:collapse;font-size:11.5px}
 #spec td{padding:3px 0;border-bottom:1px dashed rgba(140,180,255,.15)}
 #spec td:last-child{text-align:right;color:#a9c8f5}
-#slider{position:absolute;bottom:52px;left:50%;transform:translateX(-50%);width:min(520px,60vw);background:rgba(13,20,32,.88);border:1px solid rgba(120,170,255,.25);border-radius:12px;padding:10px 16px;color:#cfe0ff;font-size:12px}
+#slider{position:absolute;z-index:20;bottom:52px;left:50%;transform:translateX(-50%);width:min(520px,60vw);background:rgba(13,20,32,.88);border:1px solid rgba(120,170,255,.25);border-radius:12px;padding:10px 16px;color:#cfe0ff;font-size:12px}
 #slider input{width:100%;accent-color:#5aa2ff}
 #expl{position:absolute;bottom:120px;left:50%;transform:translateX(-50%);color:#7f9cc9;font-size:11px}
+#lblLayer{z-index:1}
+#lblLayer.noLbl .lbl{display:none}
 
 /* ---- мобильная адаптация ---- */
 @media (max-width: 640px) {
@@ -46,6 +48,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#0e1420;font-family:'S
   <h1>Типовой узел ПСПК (система МАРХИ)</h1>
   <div class="g">Состав узла</div>
   <div id="layers"></div>
+  <label><input type="checkbox" id="Lb-all" checked><span class="sw" style="background:#8fc3ff"></span>Метки на сцене</label>
   <div class="g">Вид</div>
   <button class="btn" id="v-iso">Изометрия</button>
   <button class="btn" id="v-front">Сбоку</button>
@@ -92,6 +95,7 @@ const controls=new OrbitControls(camera,renderer.domElement);
 controls.enableDamping=true;
 const labelRenderer=new CSS2DRenderer();
 labelRenderer.domElement.style.position='absolute';labelRenderer.domElement.style.top='0';labelRenderer.domElement.style.pointerEvents='none';
+labelRenderer.domElement.id='lblLayer';
 document.body.appendChild(labelRenderer.domElement);
 function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h);labelRenderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
 addEventListener('resize',resize);resize();
@@ -188,6 +192,12 @@ LAYERS.forEach(([k,n,c])=>{
   layersDiv.appendChild(lab);
   lab.querySelector('input').addEventListener('change',e=>{groups[k].visible=e.target.checked});
 });
+
+// мастер-выключатель меток (на смартфоне скрыты по умолчанию)
+const lbAll=document.getElementById('Lb-all');
+if(matchMedia('(max-width: 640px)').matches) lbAll.checked=false;
+const applyLblVis=()=>labelRenderer.domElement.classList.toggle('noLbl',!lbAll.checked);
+lbAll.addEventListener('change',applyLblVis); applyLblVis();
 
 // разборка
 let explode=0;

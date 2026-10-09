@@ -7,8 +7,8 @@
 <style>
   html, body { margin:0; padding:0; height:100%; overflow:hidden; font-family:'Segoe UI', system-ui, sans-serif; background:#dfe9f0; }
   #scene { position:absolute; inset:0; }
-  #labels { position:absolute; inset:0; pointer-events:none; }
-  #panel { position:absolute; top:14px; left:14px; width:330px; max-height:calc(100% - 90px); overflow-y:auto;
+  #labels { position:absolute; inset:0; pointer-events:none; z-index:1; }
+  #panel { position:absolute; z-index:20; top:14px; left:14px; width:330px; max-height:calc(100% - 90px); overflow-y:auto;
     background:rgba(255,255,255,0.93); border:1px solid #b9c7d2; border-radius:10px;
     padding:14px 16px; box-shadow:0 4px 18px rgba(30,50,70,0.18); font-size:13px; color:#1e2c38; }
   #panel h1 { font-size:15px; margin:0 0 2px 0; color:#0e3a5c; }
@@ -17,18 +17,19 @@
   #stages li { padding:3px 8px; border-radius:5px; margin:1px 0; color:#5a6b78; }
   #stages li.done { color:#1e2c38; }
   #stages li.active { background:#0e6aa8; color:#fff; font-weight:600; }
-  #controls { position:absolute; left:50%; bottom:16px; transform:translateX(-50%); display:flex; gap:10px; align-items:center;
+  #controls { position:absolute; z-index:20; left:50%; bottom:16px; transform:translateX(-50%); display:flex; gap:10px; align-items:center;
     background:rgba(255,255,255,.92); border:1px solid #b9c7d2; border-radius:10px; padding:8px 14px; box-shadow:0 4px 18px rgba(30,50,70,.15); }
   #playBtn { width:42px; height:42px; border-radius:50%; border:none; background:#0e6aa8; color:#fff; font-size:16px; cursor:pointer; }
   #playBtn:hover { background:#0b5585; }
   #timeline { width:min(520px, 45vw); accent-color:#0e6aa8; }
   #stageName { font-size:12.5px; color:#16405e; min-width:230px; font-weight:600; }
-  #hint { position:absolute; bottom:70px; left:50%; transform:translateX(-50%); font-size:11.5px; color:#48606f;
+  #hint { position:absolute; z-index:20; bottom:70px; left:50%; transform:translateX(-50%); font-size:11.5px; color:#48606f;
           background:rgba(255,255,255,.8); padding:3px 12px; border-radius:12px; border:1px solid #c8d4dd; }
   .lbl { font:11px 'Segoe UI', system-ui, sans-serif; color:#10344e; background:rgba(255,255,255,.88);
          padding:1px 6px; border-radius:4px; border:1px solid #b3c3cf; white-space:nowrap; }
   .lbl.tag { font-weight:600; color:#0e5c2e; border-color:#7fbc94; background:rgba(240,252,244,.92); }
   .lbl.stage { font-weight:600; color:#7a2d0e; border-color:#d9a684; background:rgba(255,246,240,.94); }
+  #labels.noLbl .lbl { display:none; }
 
 /* ---- мобильная адаптация ---- */
 @media (max-width: 640px) {
@@ -58,11 +59,12 @@
 <div id="panel">
   <h1>Сборка спортзала 24 × 46 м</h1>
   <div class="sub">Технологическая мультипликация: от подготовки площадки до подъёма флагов</div>
+  <label style="display:flex;align-items:center;gap:7px;font-size:12.5px;cursor:pointer;margin:0 0 8px 2px"><input type="checkbox" id="Lb-all" checked> Метки этапов на сцене</label>
   <ul id="stages"></ul>
 </div>
 <div id="controls">
   <button id="playBtn" title="Пуск / пауза">▶</button>
-  <input type="range" id="timeline" min="0" max="1100" step="1" value="0">
+  <input type="range" id="timeline" min="0" max="1100" step="1" value="55">
   <div id="stageName">Готово к сборке</div>
 </div>
 <div id="hint">Вращение — левая кнопка · масштаб — колесо · сдвиг — правая кнопка · <a href="index.html" style="color:#0e6aa8">к модели зала</a></div>
@@ -374,6 +376,12 @@ const flagGroups=[];
 
 /* ================= ТАЙМЛАЙН ================= */
 document.getElementById('pToggle').onclick=()=>{document.getElementById('panel').classList.toggle('collapsed')};
+// мастер-выключатель меток (на смартфоне скрыты по умолчанию)
+const labelsBox=document.getElementById('labels');
+const lbAll=document.getElementById('Lb-all');
+if(matchMedia('(max-width: 640px)').matches) lbAll.checked=false;
+const applyLblVis=()=>labelsBox.classList.toggle('noLbl',!lbAll.checked);
+lbAll.addEventListener('change',applyLblVis); applyLblVis();
 const stages=[
   {g:gS1, name:'1. Инженерная подготовка площадки'},
   {g:gS2, name:'2. Укладка ж/б плит-лент 120 мм'},
@@ -393,7 +401,7 @@ stages.forEach((s,i)=>{ const li=document.createElement('li'); li.textContent=s.
 const items=[...stageList.children];
 const ease=t=>t*t*(3-2*t);
 const N=stages.length;   // t ∈ [0, N]
-let t=0, playing=false, last=performance.now();
+let t=0.55, playing=false, last=performance.now();
 const timeline=document.getElementById('timeline');
 const stageName=document.getElementById('stageName');
 const playBtn=document.getElementById('playBtn');
@@ -452,7 +460,8 @@ function waveFlags(time){
   renderer.render(scene,camera);
   labelRenderer.render(scene,camera);
 })(performance.now());
-apply(0);
+apply(t);
+window.__dbg={scene, stages, gS8};
 </script>
 </body>
 </html>
