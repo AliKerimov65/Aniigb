@@ -8,6 +8,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#dfe9f0}
 #scene{position:fixed;inset:0}
+#vignette{position:fixed;inset:0;z-index:30;pointer-events:none;background:radial-gradient(ellipse at center,transparent 54%,rgba(8,14,26,.30) 100%)}
 /* ===== NAV ===== */
 #modNav{position:fixed;top:14px;left:14px;z-index:2000;font-family:'Segoe UI',system-ui,-apple-system,sans-serif}
 #modNavBtn{display:flex;align-items:center;gap:9px;padding:10px 15px;border-radius:12px;border:1px solid rgba(140,190,255,.35);background:rgba(13,20,32,.88);backdrop-filter:blur(8px);color:#dbe8ff;font-size:13px;font-weight:600;letter-spacing:.2px;cursor:pointer;box-shadow:0 4px 18px rgba(10,20,40,.35);transition:border-color .15s,box-shadow .15s,background .15s}
@@ -90,6 +91,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',system-u
   </div>
 </nav>
 <div id="scene"></div>
+<div id="vignette"></div>
 <button id="exitBtn" title="Вернуться к 3D-модели">✕ <span>Выйти из демонстрации</span></button>
 <div id="capWrap"><div id="capTitle"></div><div id="capSub"></div></div>
 <div id="cardBG"></div>
@@ -110,7 +112,17 @@ const yB=x=>ROOF_BOT+archY(x),yT=x=>yB(x)+ROOF_D;
 const colZ=[0,6,12,18,24,30,36,42,46];
 
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0xdfe9f0);
+/* полярное небо — вертикальный градиент */
+{
+  const skyCv=document.createElement('canvas');skyCv.width=4;skyCv.height=512;
+  const sg=skyCv.getContext('2d');
+  const grd=sg.createLinearGradient(0,0,0,512);
+  grd.addColorStop(0,'#6f9cc8');grd.addColorStop(0.42,'#a9c6e0');
+  grd.addColorStop(0.72,'#d5e4ee');grd.addColorStop(1,'#e9eef3');
+  sg.fillStyle=grd;sg.fillRect(0,0,4,512);
+  const skyTex=new THREE.CanvasTexture(skyCv);skyTex.colorSpace=THREE.SRGBColorSpace;
+  scene.background=skyTex;
+}
 scene.fog=new THREE.Fog(0xdfe9f0,170,540);
 const camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,0.1,1200);
 camera.position.set(-46,30,-40);
@@ -160,6 +172,29 @@ function box(w,h,d,x,y,z,color,group,opts={}){
   if(opts.ry)m.rotation.y=opts.ry;
   group.add(m);return m;
 }
+/* текстуры свечения и сетки */
+function glowTexture(){
+  const c=document.createElement('canvas');c.width=c.height=128;
+  const g=c.getContext('2d');
+  const r=g.createRadialGradient(64,64,0,64,64,64);
+  r.addColorStop(0,'rgba(255,246,220,1)');r.addColorStop(0.35,'rgba(255,240,200,.55)');r.addColorStop(1,'rgba(255,240,200,0)');
+  g.fillStyle=r;g.fillRect(0,0,128,128);
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
+}
+const glowTex=glowTexture();
+function netTexture(){
+  const c=document.createElement('canvas');c.width=c.height=256;
+  const g=c.getContext('2d');g.clearRect(0,0,256,256);
+  g.strokeStyle='rgba(240,248,255,.92)';g.lineWidth=2;
+  for(let i=0;i<=256;i+=32){
+    g.beginPath();g.moveTo(i,0);g.lineTo(i,256);g.stroke();
+    g.beginPath();g.moveTo(0,i);g.lineTo(256,i);g.stroke();
+  }
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
+}
+/* солнце над тундрой */
+const sunSpr=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xfff2d0,transparent:true,opacity:0.85,depthWrite:false,fog:false}));
+sunSpr.position.set(-190,150,-240);sunSpr.scale.set(150,150,1);scene.add(sunSpr);
 
 /* ================= ГРУППЫ ================= */
 const gBase=new THREE.Group(),gFnd=new THREE.Group(),gShields=new THREE.Group(),gFloor=new THREE.Group(),
@@ -170,8 +205,7 @@ const gBase=new THREE.Group(),gFnd=new THREE.Group(),gShields=new THREE.Group(),
 /* ---- Площадка и окружение ---- */
 box(170,0.2,210,W/2,-0.78,L/2,0xe9eef3,gBase,{rough:1});
 box(W+7,0.6,L+6,W/2,-0.3,L/2,0xc9b99a,gBase);
-box(4.4,0.6,4.6,3.2,-0.3,-4.7,0xc9b99a,gBase);
-box(2.4,0.6,2.2,7.6,-0.3,-1.1,0xc9b99a,gBase);
+box(13.4,0.6,9.2,6,-0.3,-4.8,0xc9b99a,gBase);
 
 /* ---- Плиты фундамента 27×48 ---- */
 {
@@ -199,6 +233,7 @@ box(2.4,0.6,2.2,7.6,-0.3,-1.1,0xc9b99a,gBase);
     fndD.push([[(i+1)*MOD,FND_BOT,j*MOD],[p?i*MOD:(i+1)*MOD,FND_TOP,(j+1)*MOD]]);
     fndD.push([[i*MOD,FND_BOT,j*MOD],[p?(i+1)*MOD:i*MOD,FND_TOP,(j+1)*MOD]]);
     fndD.push([[(i+1)*MOD,FND_BOT,(j+1)*MOD],[p?i*MOD:(i+1)*MOD,FND_TOP,j*MOD]]);
+    fndD.push([[i*MOD,FND_BOT,(j+1)*MOD],[p?(i+1)*MOD:i*MOD,FND_TOP,j*MOD]]);
   }
   makeRods(fndC,0.05,0x9a5a28,gFnd,{rough:0.5});
   makeRods(fndD,0.028,0xc07a30,gFnd,{rough:0.5});
@@ -220,17 +255,12 @@ box(2.4,0.6,2.2,7.6,-0.3,-1.1,0xc9b99a,gBase);
 
 /* ---- Плита пола ---- */
 box(W+2*OX,FLR_T,L+2*OZ,W/2,FND_TOP+FLR_T/2,L/2,0xd8dade,gFloor,{rough:0.95});
-box(AUX-OX,FLR_T,L,W+AUX/2+OX/2,FND_TOP+FLR_T/2,L/2,0xd8dade,gFloor,{rough:0.95});
-box(7.0,0.2,4.6,4.1,FFL-0.10,-2.3,0xd8dade,gFloor,{rough:0.95});
-box(2.4,0.2,2.2,7.6,FFL-0.10,-0.6,0xd8dade,gFloor,{rough:0.95});
 
-/* ---- Колонны ---- */
+/* ---- Колонны (треугольные △700 и △1200, как в 3D-модели) ---- */
 {
   const hc=[],hd=[],hn=[];
   const defs=[];
-  colZ.forEach(z=>{defs.push({x:0,z});defs.push({x:W,z});if(z>0&&z<L)defs.push({x:W,z:Math.min(z+AUX,L)})});
-  const triIdx=Math.round(18/6),triIdx2=triIdx+1;
-  defs.push({x:0,z:18+AUX/2},{x:0,z:24+AUX/2});
+  colZ.forEach(z=>{defs.push({x:0,z});defs.push({x:W,z})});
   defs.forEach(c=>{
     const big=(c.x===0&&(Math.abs(c.z-18)<0.1||Math.abs(c.z-24)<0.1))||(c.x===W&&(Math.abs(c.z-18)<0.1||Math.abs(c.z-30)<0.1));
     const R=big?TRI_HR:TRI_R;
@@ -286,83 +316,114 @@ box(2.4,0.2,2.2,7.6,FFL-0.10,-0.6,0xd8dade,gFloor,{rough:0.95});
   }
 }
 
-/* ---- Стены и фасад ---- */
+/* ---- Стены и фасад (сплошные по всему периметру) ---- */
 {
   const wallC=0xdfe4ea,panOpts={rough:0.6,opacity:0.30};
   for(let i=0;i<8;i++){const xc=i*3+1.5;box(2.94,COL_H-0.2,0.18,xc,FFL+COL_H/2,-0.09,wallC,gWalls,panOpts)}
   for(let i=0;i<8;i++){const xc=i*3+1.5;box(2.94,COL_H-0.2,0.18,xc,FFL+COL_H/2,L+0.09,wallC,gWalls,panOpts)}
   for(let j=0;j<15;j++){const zc=j*3+1.5;if(zc>L-1)break;box(0.18,COL_H-0.2,2.94,-0.09,FFL+COL_H/2,zc,wallC,gWalls,panOpts)}
-  for(let j=0;j<14;j++){const zc=AUX+j*3+1.5;if(zc>L-1)break;box(0.18,COL_H-0.2,2.94,W+0.09,FFL+COL_H/2,zc,wallC,gWalls,panOpts)}
-  for(let j=0;j<15;j++){const zc=j*3+1.5;if(zc>L-1)break;box(0.18,COL_H-0.2,2.94,W+AUX,FFL+COL_H/2,zc,wallC,gWalls,panOpts)}
-  box(AUX,COL_H-0.2,0.18,W+AUX/2,FFL+COL_H/2,-0.09,wallC,gWalls,panOpts);
+  for(let j=0;j<15;j++){const zc=j*3+1.5;if(zc>L-1)break;box(0.18,COL_H-0.2,2.94,W+0.09,FFL+COL_H/2,zc,wallC,gWalls,panOpts)}
   box(1.6,2.2,0.14,4.1,FFL+1.1,-0.12,0x8a97a5,gWalls,{rough:0.5});
 }
-/* ---- Вспомогательный блок (3 этажа) ---- */
+
+/* ---- Вспомогательный блок 5×24 м: 3 этажа в торце зала под общим покрытием ---- */
 {
-  const bx0=W+0.2,bx1=W+AUX-0.2,bz0=6,bz1=L,FH=3.1;
-  const auxM=0xcfd6de;
-  for(let f=0;f<3;f++){
-    box(bx1-bx0,0.14,bz1-bz0,(bx0+bx1)/2,FFL+f*FH+FH-0.07,(bz0+bz1)/2,0xb8c0ca,gAux,{rough:0.8});
-  }
-  box(bx1-bx0+0.3,0.5,bz1-bz0+0.3,(bx0+bx1)/2,FFL+3*FH+0.25,(bz0+bz1)/2,auxM,gAux,{rough:0.7,opacity:0.45});
-  box(0.14,3*FH,bz1-bz0,bx0,FFL+1.5*FH,(bz0+bz1)/2,auxM,gAux,{opacity:0.28,rough:0.55});
-  box(0.14,3*FH,bz1-bz0,bx1,FFL+1.5*FH,(bz0+bz1)/2,auxM,gAux,{opacity:0.28,rough:0.55});
-  box(bx1-bx0,3*FH,0.14,(bx0+bx1)/2,FFL+1.5*FH,bz0,auxM,gAux,{opacity:0.28,rough:0.55});
-  box(bx1-bx0,3*FH,0.14,(bx0+bx1)/2,FFL+1.5*FH,bz1,auxM,gAux,{opacity:0.28,rough:0.55});
-  for(let f=0;f<3;f++)for(let k=0;k<6;k++){
-    const wz=bz0+2+k*6.2;
-    box(0.06,1.3,1.7,bx1+0.08,FFL+f*FH+1.9,wz,0x3a5f8a,gAux,{opacity:0.85,rough:0.3});
-  }
+  const axX=[0.6,6,12,18,23.4],axZ=[0.5,2.5,4.5],floors=[FFL+3.2,FFL+6.4,FFL+9.6];
+  const posts=[];
+  axX.forEach(x=>axZ.forEach(z=>posts.push([[x,FFL,z],[x,FFL+9.6,z]])));
+  makeRods(posts,0.14,0x7a8c5a,gAux,{seg:4,rough:0.5});
+  floors.forEach(f=>{
+    axZ.forEach(z=>box(W-1.2,0.24,0.2,W/2,f-0.12,z,0x7a8c5a,gAux,{metal:0.4,rough:0.5}));
+    axX.forEach(x=>box(0.2,0.24,4.0,x,f-0.12,2.5,0x7a8c5a,gAux,{metal:0.4,rough:0.5}));
+    box(W-1.2,0.14,4.2,W/2,f+0.07,2.5,0xcdd3d8,gAux,{rough:0.9});
+  });
+  /* глухая стена блока со стороны поля и ленточное остекление галерей */
+  box(W-0.8,12.0-FFL,0.15,W/2,(FFL+12.0)/2,AUX+0.28,0xe2d9c8,gAux,{rough:0.6});
+  floors.forEach(f=>{box(W-2.6,1.25,0.06,W/2,f+1.45,AUX+0.19,0x3a5f8a,gAux,{opacity:0.55,rough:0.25})});
+  /* фронтон блока у южного фасада */
+  box(W-0.8,9.6,0.12,W/2,FFL+4.8,0.44,0xcfd6de,gAux,{opacity:0.45,rough:0.6});
 }
 
-/* ---- Поле 38×19 ---- */
+/* ---- Поле 38×19 с разметкой и воротами ---- */
 {
-  const fx0=2.5,fx1=21.5,fz0=6,fz1=44;
-  box(fx1-fx0,0.06,fz1-fz0,(fx0+fx1)/2,FFL+0.03,(fz0+fz1)/2,0x3e9e4f,gField,{rough:0.9});
-  const lc=0xffffff,y=FFL+0.07;
-  const mk=[];
-  mk.push([[fx0+0.3,y,fz0+0.3],[fx1-0.3,y,fz0+0.3]]);
-  mk.push([[fx0+0.3,y,fz1-0.3],[fx1-0.3,y,fz1-0.3]]);
-  mk.push([[fx0+0.3,y,fz0+0.3],[fx0+0.3,y,fz1-0.3]]);
-  mk.push([[fx1-0.3,y,fz0+0.3],[fx1-0.3,y,fz1-0.3]]);
-  mk.push([[fx0+0.3,y,(fz0+fz1)/2],[fx1-0.3,y,(fz0+fz1)/2]]);
-  makeRods(mk,0.05,lc,gField,{rough:0.6,metal:0});
-  const ring=new THREE.Mesh(new THREE.RingGeometry(2.6,2.75,48),new THREE.MeshStandardMaterial({color:lc,roughness:0.6}));
-  ring.rotation.x=-Math.PI/2;ring.position.set((fx0+fx1)/2,y,(fz0+fz1)/2);gField.add(ring);
-  [fz0+0.3,fz1-0.3].forEach(gz=>{
-    const gw=5,gh=2.2,dir=gz<25?1:-1;
-    box(0.08,gh,gw,12,FFL+gh/2,gz,0xe8ecf0,gField);
-    box(0.08,gh,0.08,12,FFL+gh/2,gz-dir*0.0+gw/2*(dir>0?1:-1),0xe8ecf0,gField);
-    box(1.2,0.05,gw+0.3,12+dir*0.6,FFL+gh+0.02,gz,0xe8ecf0,gField,{opacity:0.4});
+  const cx=12,cz=25.5,pw=19,pl=38,ly=FFL+0.012;
+  box(W-0.9,0.02,40.08,cx,FFL+0.005,cz,0x3f9e4d,gField,{rough:0.9});
+  const line=(w,d,x,z)=>box(w,0.006,d,x,ly+0.008,z,0xf4f8f4,gField,{rough:0.6});
+  line(pw,0.08,cx,cz-pl/2);line(pw,0.08,cx,cz+pl/2);
+  line(0.08,pl,cx-pw/2,cz);line(0.08,pl,cx+pw/2,cz);
+  line(pw,0.08,cx,cz);
+  [-1,1].forEach(s=>{
+    line(12,0.08,cx,cz+s*(pl/2-5));line(0.08,5,cx-6,cz+s*(pl/2-2.5));line(0.08,5,cx+6,cz+s*(pl/2-2.5));
+    line(6,0.08,cx,cz+s*(pl/2-2));line(0.08,2,cx-3,cz+s*(pl/2-1));line(0.08,2,cx+3,cz+s*(pl/2-1));
+  });
+  const circ=new THREE.Mesh(new THREE.TorusGeometry(3,0.045,8,48),
+    new THREE.MeshStandardMaterial({color:0xf4f8f4,roughness:0.6}));
+  circ.rotation.x=Math.PI/2;circ.position.set(cx,ly+0.008,cz);gField.add(circ);
+  /* ворота 3×2 м с сеткой */
+  const netMat=new THREE.MeshBasicMaterial({map:netTexture(),transparent:true,opacity:0.55,side:THREE.DoubleSide,depthWrite:false});
+  [-1,1].forEach(s=>{
+    const gz=cz+s*pl/2,zp=gz-s*0.6;
+    makeRods([[[cx-1.5,ly,zp],[cx-1.5,ly+2,zp]],[[cx+1.5,ly,zp],[cx+1.5,ly+2,zp]],[[cx-1.5,ly+2,zp],[cx+1.5,ly+2,zp]]],
+      0.045,0xffffff,gField,{seg:6,metal:0.2,rough:0.4});
+    const back=new THREE.Mesh(new THREE.PlaneGeometry(3,2),netMat);
+    back.position.set(cx,ly+1,zp-s*0.9);gField.add(back);
+    const top=new THREE.Mesh(new THREE.PlaneGeometry(3,0.95),netMat);
+    top.rotation.x=Math.PI/2;top.position.set(cx,ly+2,zp-s*0.45);gField.add(top);
+    [-1.5,1.5].forEach(dx=>{
+      const side=new THREE.Mesh(new THREE.PlaneGeometry(0.95,2),netMat);
+      side.rotation.y=Math.PI/2;side.position.set(cx+dx,ly+1,zp-s*0.45);gField.add(side);
+    });
   });
 }
 
-/* ---- Входная группа: навес, лестница, скульптуры ---- */
+/* ---- Входная группа: навес ПСПК, крыльцо, лестница, пандус, скульптуры, LED-вывеска ---- */
+let ledGlow=null;
 {
-  const CTOP=FFL+3.2;
-  const er=[],en=[];
-  [[0.9,0],[7.3,0],[0.9,-3.0],[7.3,-3.0]].forEach(p=>{
-    en.push([p[0],FFL,p[1]],[p[0],CTOP,p[1]]);
-    er.push([[p[0],FFL,p[1]],[p[0],CTOP,p[1]]]);
+  const CX0=0,CX1=12,CZ0=-3.0,CZ1=0.0;
+  const CTOP=FFL+3.2,CDEP=0.55;
+  const rodsT=[],rodsB=[],rodsD=[],rodsC=[];
+  const xs=[];for(let x=CX0;x<=CX1;x+=1.5)xs.push(x);
+  const zs=[CZ0,-1.5,CZ1];
+  const xb=xs.slice(0,-1).map(x=>x+0.75);
+  const zb=[-2.25,-0.75];
+  xs.forEach((x,i)=>{zs.forEach((z,j)=>{
+    if(i<xs.length-1)rodsT.push([[x,CTOP,z],[xs[i+1],CTOP,z]]);
+    if(j<zs.length-1)rodsT.push([[x,CTOP,z],[x,CTOP,zs[j+1]]]);
+  })});
+  xb.forEach((x,i)=>{zb.forEach((z,j)=>{
+    if(i<xb.length-1)rodsB.push([[x,CTOP-CDEP,z],[xb[i+1],CTOP-CDEP,z]]);
+    if(j<zb.length-1)rodsB.push([[x,CTOP-CDEP,z],[x,CTOP-CDEP,zb[j+1]]]);
+    rodsD.push([[x,CTOP-CDEP,z],[xs[i],CTOP,zs[j]]],
+               [[x,CTOP-CDEP,z],[xs[i+1],CTOP,zs[j]]],
+               [[x,CTOP-CDEP,z],[xs[i],CTOP,zs[j+1]]],
+               [[x,CTOP-CDEP,z],[xs[i+1],CTOP,zs[j+1]]]);
+  })});
+  makeRods(rodsT,0.045,0x2e6f9e,gEnt,{rough:0.4,metal:0.5});
+  makeRods(rodsB,0.045,0x35807a,gEnt,{rough:0.4,metal:0.5});
+  makeRods(rodsD,0.035,0x6fa8c9,gEnt,{rough:0.45,metal:0.45});
+  /* две передние треугольные колонны △700 */
+  [[1.2,CZ0+0.5],[10.8,CZ0+0.5]].forEach(([px,pz])=>{
+    const verts=[0,1,2].map(k=>{const a=Math.PI/2+k*2*Math.PI/3;return[px+TRI_R*Math.cos(a),pz+TRI_R*Math.sin(a)]});
+    const rr=[];verts.forEach(([vx,vz])=>rr.push([[vx,0.05,vz],[vx,CTOP-CDEP,vz]]));
+    makeRods(rr,0.06,0x3a5f8a,gEnt,{seg:8,rough:0.4,metal:0.5});
+    makeNodes([[px,CTOP-CDEP,pz]],0.14,0xd97a1e,gEnt);
   });
-  for(let i=0;i<=2;i++){
-    const x=0.9+i*3.2;
-    er.push([[x,CTOP,0],[x,CTOP,-3.0]]);
-  }
-  er.push([[0.9,CTOP,0],[7.3,CTOP,0]]);
-  er.push([[0.9,CTOP,-3.0],[7.3,CTOP,-3.0]]);
-  er.push([[0.9,CTOP,0],[0.9,CTOP,-3.0]]);
-  er.push([[7.3,CTOP,0],[7.3,CTOP,-3.0]]);
-  er.push([[0.9,CTOP,0],[7.3,CTOP,-3.0]]);
-  er.push([[7.3,CTOP,0],[0.9,CTOP,-3.0]]);
-  makeRods(er,0.05,0x2456a8,gEnt,{rough:0.4,metal:0.5});
-  makeNodes(en,0.09,0x1a3a78,gEnt);
-  box(7.6,0.3,4.2,4.1,CTOP+0.15,-1.5,0xe06a1e,gEnt,{rough:0.5});
-  box(7.4,0.08,4.0,4.1,CTOP+0.34,-1.5,0x9fc3dd,gEnt,{opacity:0.4,rough:0.15});
-  /* лестница */
+  /* подкосы к колоннам главного фасада */
+  [0,6,12].forEach(x=>rodsC.push([[x,FFL+2.0,0],[x,CTOP-CDEP,-2.25]]));
+  makeRods(rodsC,0.05,0x3a5f8a,gEnt,{rough:0.4,metal:0.5});
+  /* фасция, кровля и тёплая подшивка навеса */
+  box(12.3,0.5,0.08,6,CTOP+0.22,CZ0-0.02,0xd97a1e,gEnt,{metal:0.3,rough:0.4});
+  box(12.3,0.5,0.08,6,CTOP+0.22,CZ1+0.02,0xd97a1e,gEnt,{metal:0.3,rough:0.4});
+  box(0.08,0.5,3.0,CX0-0.02,CTOP+0.22,-1.5,0xd97a1e,gEnt,{metal:0.3,rough:0.4});
+  box(0.08,0.5,3.0,CX1+0.02,CTOP+0.22,-1.5,0xd97a1e,gEnt,{metal:0.3,rough:0.4});
+  box(12.5,0.1,3.15,6,CTOP+0.52,-1.5,0x9fc3dd,gEnt,{opacity:0.35,rough:0.2});
+  box(12.3,0.06,3.0,6,CTOP-CDEP-0.04,-1.5,0xe8d9b8,gEnt,{rough:0.8});
+  /* крыльцо */
+  box(12.6,0.2,4.8,6,FFL-0.10,-2.6,0xd8dade,gEnt,{rough:0.95});
+  /* парадная лестница — монолитные ступени */
   for(let s=0;s<15;s++){
-    const h=FFL-0.15*(s+1),zd=PLZ0+0.2-s*0.31;
-    box(3.0,0.15,0.34,3.8,h/2,zd,0xc4ccd4,gEnt,{rough:0.85});
+    const top=FFL-0.15*(s+1),zd=PLZ0+0.2-s*0.31;
+    box(3.0,top,0.34,3.8,top/2,zd,0xc4ccd4,gEnt,{rough:0.85});
   }
   const rail=[];
   for(let s=0;s<6;s++){
@@ -373,6 +434,26 @@ box(2.4,0.2,2.2,7.6,FFL-0.10,-0.6,0xd8dade,gFloor,{rough:0.95});
   rail.push([[2.25,FFL+0.9,PLZ0+0.2],[2.25,0.9,PLZ0-4.45]]);
   rail.push([[5.35,FFL+0.9,PLZ0+0.2],[5.35,0.9,PLZ0-4.45]]);
   makeRods(rail,0.035,0x5a6a7a,gEnt,{rough:0.4,metal:0.6});
+  /* пандус */
+  const ramp=box(1.5,0.08,7.8,8.6,FFL/2,-4.9,0xc3c9cf,gEnt,{rough:0.9});
+  ramp.rotation.x=-Math.atan2(FFL,7.8);
+
+  /* LED-вывеска на фасции навеса */
+  const cv=document.createElement('canvas');cv.width=2048;cv.height=128;
+  const g=cv.getContext('2d');
+  g.fillStyle='#0a1626';g.fillRect(0,0,2048,128);
+  const txt='СПОРТИВНЫЙ ЗАЛ «ТАЙМЫР» · ДУДИНКА';
+  g.font='bold 84px "Segoe UI",system-ui,sans-serif';
+  const tw=g.measureText(txt).width;
+  if(tw>1960)g.font='bold '+Math.floor(84*1960/tw)+'px "Segoe UI",system-ui,sans-serif';
+  g.textAlign='center';g.textBaseline='middle';
+  g.shadowColor='rgba(90,180,255,.9)';g.shadowBlur=18;
+  g.fillStyle='#cfe6ff';g.fillText(txt,1024,66);
+  const lt=new THREE.CanvasTexture(cv);lt.colorSpace=THREE.SRGBColorSpace;lt.anisotropy=8;
+  const led=new THREE.Mesh(new THREE.PlaneGeometry(8.4,0.5),new THREE.MeshBasicMaterial({map:lt}));
+  led.position.set(6,CTOP+0.22,-3.075);led.rotation.y=Math.PI;gEnt.add(led);
+  ledGlow=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0x7db8ff,transparent:true,opacity:0.22,depthWrite:false,blending:THREE.AdditiveBlending}));
+  ledGlow.position.set(6,CTOP+0.22,-3.5);ledGlow.scale.set(10,1.6,1);gEnt.add(ledGlow);
 
   /* скульптуры спортсменов (бронза), лицом к гостям */
   const bronze=0x7a5a34;
@@ -471,6 +552,45 @@ function waveFlags(time){
     pos.needsUpdate=true;m.geometry.computeVertexNormals();
   }
 }
+
+/* ---- Спортивное освещение: 4 мачты с конусами света + подсветка арены ---- */
+const lampMats=[],lightCones=[],lightGlows=[],ptLights=[];
+{
+  const mastSpot=(mx,mz,tx,tz)=>{
+    const H=14;
+    const mast=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.16,H,10),
+      new THREE.MeshStandardMaterial({color:0x8a949e,roughness:0.5,metalness:0.6}));
+    mast.position.set(mx,H/2,mz);mast.castShadow=true;gBase.add(mast);
+    const head=new THREE.Group();head.position.set(mx,H+0.05,mz);head.lookAt(tx,0.6,tz);gBase.add(head);
+    box(1.15,0.3,0.36,0,0,0,0x39424e,head,{rough:0.5,metal:0.5});
+    const lm=new THREE.MeshStandardMaterial({color:0x30363e,emissive:0xffedb8,emissiveIntensity:0.15,roughness:0.4});
+    for(let k=-1;k<=1;k++){
+      const lamp=new THREE.Mesh(new THREE.BoxGeometry(0.26,0.18,0.08),lm);
+      lamp.position.set(k*0.38,0,0.22);head.add(lamp);
+    }
+    lampMats.push(lm);
+    const gs=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xffedb8,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}));
+    gs.position.set(0,0,0.7);gs.scale.set(3.6,3.6,1);head.add(gs);lightGlows.push(gs);
+    const dv=V(tx-mx,0.6-(H+0.05),tz-mz),len=dv.length(),dn=dv.clone().normalize();
+    const coneGeo=new THREE.ConeGeometry(4.6,len,24,1,true);coneGeo.translate(0,-len/2,0);
+    const cone=new THREE.Mesh(coneGeo,new THREE.MeshBasicMaterial({color:0xfff3cf,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false}));
+    cone.position.set(mx,H+0.05,mz);
+    cone.quaternion.setFromUnitVectors(V(0,-1,0),dn);
+    gBase.add(cone);lightCones.push(cone);
+  };
+  mastSpot(-5.5,-5.5,5,5);mastSpot(29.5,-5.5,19,5);mastSpot(-5.5,51.5,5,41);mastSpot(29.5,51.5,19,41);
+  /* люмы над полем */
+  const stripMat=new THREE.MeshStandardMaterial({color:0x2a2f36,emissive:0xfff2cc,emissiveIntensity:0.15,roughness:0.5});
+  for(let k=0;k<6;k++){
+    const s=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.08,4.6),stripMat);
+    s.position.set(12,yB(12)-0.35,9.5+k*5.4);gRoof.add(s);
+  }
+  lampMats.push(stripMat);
+  [[8,16],[16,34]].forEach(([px,pz])=>{
+    const pl=new THREE.PointLight(0xfff0d8,0,80,2);pl.position.set(px,10.8,pz);scene.add(pl);ptLights.push(pl);
+  });
+}
+
 /* ================= РЕЕСТРЫ МАТЕРИАЛОВ (для подсветки фаз) ================= */
 const matsOf=g=>{const s=new Set();g.traverse(o=>{if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{m.transparent=true;m.needsUpdate=true;s.add(m)})}});return [...s]};
 const wallMats=matsOf(gWalls);
@@ -495,11 +615,11 @@ scene.add(snow);
 /* ================= РЕЖИССУРА РОЛИКА ================= */
 const T=64;
 const camCurve=new THREE.CatmullRomCurve3([
-  V(-46,30,-40),V(-30,13,-8),V(4.5,4.2,-15),V(13,4.6,-8),
+  V(-46,30,-40),V(-30,13,-8),V(1.5,4.8,-19),V(16,5.2,-11),
   V(17,6.5,10),V(32,26,0),V(-16,3.0,-16),V(-54,52,62)
 ],true,'centripetal');
 const tgtCurve=new THREE.CatmullRomCurve3([
-  V(12,6,23),V(12,8,18),V(4.5,3.8,-0.5),V(12,4,22),
+  V(12,6,23),V(12,8,18),V(6,3.6,-0.2),V(12,4,22),
   V(12,3.2,32),V(12,12.8,20),V(12,1.8,18),V(12,6,20)
 ],true,'centripetal');
 
@@ -508,17 +628,17 @@ const PH=[
   cap:['Спортзал 24 × 46 м для Арктики','г. Дудинка, Красноярский край · пространственные конструкции МАРХИ (ПСПК)']},
  {t0:0.125,t1:0.250,
   cap:['Единый пространственный каркас','Колонны △700 и △1200 · плиты ПСПК h = 2,12 м · на фасаде — флаги России, Красноярского края и Дудинки']},
- {t0:0.250,t1:0.375,
-  cap:['Входная группа','Навес, парадная лестница и бронзовые скульптуры спортсменов встречают гостей']},
- {t0:0.375,t1:0.500,wall:0.07,
+ {t0:0.250,t1:0.375,light:1,
+  cap:['Входная группа','Навес ПСПК, парадная лестница и бронзовые скульптуры спортсменов встречают гостей']},
+ {t0:0.375,t1:0.500,wall:0.07,light:1,
   cap:['Внутренний объём','Поле 38 × 19 м для мини-футбола · вспомогательный блок в 3 этажа: раздевалки, душевые, инвентарная']},
- {t0:0.500,t1:0.625,wall:0.12,skin:0.05,
+ {t0:0.500,t1:0.625,wall:0.12,skin:0.05,light:1,
   cap:['Покрытие со вспарушиванием f = 900 мм','Снеговой район VI: расчётная нагрузка 4,2 кПа · естественный сход снега и воды с кровли']},
- {t0:0.625,t1:0.750,dim:0.10,shield:0.08,wall:0.06,skin:0.05,
+ {t0:0.625,t1:0.750,dim:0.10,shield:0.08,wall:0.06,skin:0.05,light:1,
   cap:['Пространственный фундамент 27 × 48 м','Проветриваемое подполье 2,12 м — вечная мерзлота не оттаивает · давление на грунт всего ≈ 6,5 кПа']},
  {t0:0.750,t1:0.875,
   cap:['Логистика поставки','Завод в Красноярске → река Енисей → Дудинка · 1 989 км · контейнеры 20 футов, узлы до 60 кг']},
- {t0:0.875,t1:1.001,card:'close',
+ {t0:0.875,t1:1.001,card:'close',light:1,
   cap:['Форум «Россия — спортивная держава»','Красноярск · проект готов к реализации']}
 ];
 const CARDS={
@@ -569,7 +689,7 @@ addEventListener('resize',()=>{
 /* ================= ЦИКЛ ================= */
 const startFrac=Math.min(0.999,Math.max(0,parseFloat(new URLSearchParams(location.search).get('t'))||0));
 let acc=startFrac*T;
-const cur={wall:0.30,skin:0.22,dim:1,shield:0.5};
+const cur={wall:0.30,skin:0.22,dim:1,shield:0.5,light:0};
 let last=performance.now();
 const cp=new THREE.Vector3(),ct=new THREE.Vector3();
 
@@ -585,14 +705,20 @@ function animate(now){
   const pi=phaseAt(t);
   if(pi!==curPhase)setPhase(pi);
   const p=PH[pi];
-  const tgt={wall:p.wall??0.30,skin:p.skin??0.22,dim:p.dim??1,shield:p.shield??0.5};
+  const tgt={wall:p.wall??0.30,skin:p.skin??0.22,dim:p.dim??1,shield:p.shield??0.5,light:p.light??0};
   const k=Math.min(1,dt*2.4);
   cur.wall+=(tgt.wall-cur.wall)*k;cur.skin+=(tgt.skin-cur.skin)*k;
   cur.dim+=(tgt.dim-cur.dim)*k;cur.shield+=(tgt.shield-cur.shield)*k;
+  cur.light+=(tgt.light-cur.light)*k;
   wallMats.forEach(m=>m.opacity=cur.wall);
   skinMats.forEach(m=>m.opacity=cur.skin);
   shieldMats.forEach(m=>m.opacity=cur.shield);
   dimMats.forEach(m=>m.opacity=cur.dim);
+  lampMats.forEach(m=>m.emissiveIntensity=0.15+2.3*cur.light);
+  lightCones.forEach(c=>c.material.opacity=0.075*cur.light);
+  lightGlows.forEach(s=>s.material.opacity=0.8*cur.light);
+  ptLights.forEach(pl=>pl.intensity=750*cur.light);
+  if(ledGlow)ledGlow.material.opacity=0.20+0.08*Math.sin(now/350);
 
   waveFlags(now/1000);
 
