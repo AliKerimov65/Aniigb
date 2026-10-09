@@ -537,16 +537,21 @@ const glassMat = new THREE.MeshStandardMaterial({
     box(3.02, 0.95, 0.22, xc, yp + 0.36, -0.05, 0, gFac, { mat: parapMat });
     box(3.06, 0.09, 0.3, xc, yp + 0.88, -0.05, 0, gFac, { mat: copMat });
   }
-  // --- вывеска на южном парапете
-  const sc = document.createElement('canvas'); sc.width = 2048; sc.height = 200;
+  // --- вывеска на южном парапете: по центру фасада, вынесена вперёд перед колоннами
+  const sc = document.createElement('canvas'); sc.width = 2048; sc.height = 112;
   const sx = sc.getContext('2d');
-  sx.fillStyle = '#ffffff'; sx.font = 'bold 108px "Segoe UI", system-ui, sans-serif';
-  sx.textAlign = 'center'; sx.textBaseline = 'middle';
-  sx.fillText('СПОРТИВНЫЙ ЗАЛ «ТАЙМЫР» · ДУДИНКА', 1024, 104);
+  const signTxt = 'СПОРТИВНЫЙ ЗАЛ «ТАЙМЫР» · ДУДИНКА';
+  sx.font = 'bold 100px "Segoe UI", system-ui, sans-serif';
+  const tw = sx.measureText(signTxt).width;
+  if (tw > sc.width - 160) sx.font = 'bold ' + Math.floor(100 * (sc.width - 160) / tw) + 'px "Segoe UI", system-ui, sans-serif';
+  sx.fillStyle = '#ffffff'; sx.textAlign = 'center'; sx.textBaseline = 'middle';
+  sx.shadowColor = 'rgba(10,30,60,.55)'; sx.shadowBlur = 6;
+  sx.fillText(signTxt, 1024, 58);
   const signTex = new THREE.CanvasTexture(sc);
-  const sign = new THREE.Mesh(new THREE.PlaneGeometry(11.2, 1.09),
+  signTex.colorSpace = THREE.SRGBColorSpace; signTex.anisotropy = 8;
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(16.4, 0.9),
     new THREE.MeshBasicMaterial({ map: signTex, transparent: true }));
-  sign.position.set(6, yT(6) + 0.4, -0.17); sign.rotation.y = Math.PI;
+  sign.position.set(12, yT(12) + 0.5, -0.56); sign.rotation.y = Math.PI;
   gFac.add(sign);
 }
 
@@ -746,7 +751,7 @@ const gField = grp('field');
       [V(cx + gw/2, ly + gh, gz), V(cx + gw/2, ly + gh - 0.35, gz + gd*gdep)],
       [V(cx - gw/2, ly, gz + gd*gdep), V(cx - gw/2, ly + gh - 0.35, gz + gd*gdep)],
       [V(cx + gw/2, ly, gz + gd*gdep), V(cx + gw/2, ly + gh - 0.35, gz + gd*gdep)],
-      [V(cx - gw/2, ly, gz + gd*gdep), V(cx + gw/2, ly, gz + gd*gdep)]
+      [V(cx + gw/2, ly, gz + gd*gdep), V(cx + gw/2, ly, gz + gd*gdep)]
     ], 0.055, 0xf4f6f8, gField);
     box(gw, gh, 0.01, cx, ly + gh/2, gz + gd*gdep, 0xdfe8ee, gField, net);           // задняя сетка
     box(0.01, gh - 0.2, gdep, cx - gw/2, ly + (gh - 0.2)/2 + 0.1, gz + gd*gdep/2, 0xdfe8ee, gField, net);
@@ -838,7 +843,7 @@ let tribTick = null;
   };
 }
 
-/* ================= МАЧТЫ НАРУЖНОГО ОСВЩЕНИЯ + ПРОЖЕКТОРЫ ================= */
+/* ================= МАЧТЫ НАРУЖНОГО ОСВЕЩЕНИЯ + ПРОЖЕКТОРЫ ================= */
 const gMast = grp('masts');
 const mastLampMat = new THREE.MeshStandardMaterial({ color: 0x3a4148, emissive: 0xffe9c4, emissiveIntensity: 0 });
 const poolMat = new THREE.MeshBasicMaterial({ map: discTexture('rgba(255,236,190,0.9)','rgba(255,220,160,0.35)'),
