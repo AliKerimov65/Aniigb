@@ -233,7 +233,6 @@ box(13.4,0.6,9.2,6,-0.3,-4.8,0xc9b99a,gBase);
     fndD.push([[(i+1)*MOD,FND_BOT,j*MOD],[p?i*MOD:(i+1)*MOD,FND_TOP,(j+1)*MOD]]);
     fndD.push([[i*MOD,FND_BOT,j*MOD],[p?(i+1)*MOD:i*MOD,FND_TOP,(j+1)*MOD]]);
     fndD.push([[(i+1)*MOD,FND_BOT,(j+1)*MOD],[p?i*MOD:(i+1)*MOD,FND_TOP,j*MOD]]);
-    fndD.push([[i*MOD,FND_BOT,(j+1)*MOD],[p?(i+1)*MOD:i*MOD,FND_TOP,j*MOD]]);
   }
   makeRods(fndC,0.05,0x9a5a28,gFnd,{rough:0.5});
   makeRods(fndD,0.028,0xc07a30,gFnd,{rough:0.5});
