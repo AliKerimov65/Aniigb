@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAE4ElEQVRYhb2WW0xUVxSGvzPnzBAYBxGp1eESplyUi0albdLEpFVrgVipfehNEd5bEWoDyEh8aGAASS1emvShTQQplWAjsW0Ebe2TTVuvFRioXGxxwEDLRYYhMhdOH4Y5DsyUIkH+p73PWvtf/zn/OntvAS/o9PFh8pQzR57idVkgXoBlLA5GZTAjc2ZicMWXcMPhCQieQdCqmN2CIJ8Gli9S0f9CmzjFm2N/93QqAqaLfwOonnJxDwZdSC89Grjbo9Lp48Om33ypigOsEmVnAyCKGu3yAiB1CYu7IbBGow3tVsnIGd7Pd2zfhrnlFufq69Co1X7XajQaMnbtxGCIxmCIJmPXTjQajf9ctZpz9XWYW26xY/u2WSLkLEmWhTjB69nu3RkEBgaSkrKZ2LhYzOZ2H9KqY5Wkp6ViG7chC7BMq+ViUzPv78/1yY2NiyUlZbPCffnHK97hzarZv5qoEpWxJIrMRnZWJulpbsckSUItSgCkp6WSnZXpk+/N4c09jRVP1Hgb1idjPFSgzE0VlZQdrVTmh4sOsWnjxiehnH/nBwcHc/JEleL1xaZmas7UUl1Ty4VvvwdArZY4efwYIctDFl9AhamEqMgIAHp771NYVKzEjMVHuHfvTwDCw/VUVpYhCII/moUJyM7KJC3tNQDsdjv7D+RhtVqVuM1m44MDeUxOTgLw6rat7MvcuzgC1icnzfC9tOwobR0drIyIJCIhkYh1iayMiOSPu52UVTzuh2Lj/PphTgHaoCBOnTw+w/e6s/VEJW0gVB/OszFxrI6JJVQfTlTSBmrr6n36Qbds7vNMmitoNB7y8T1kjR51QABb3t5LTMoLAHRd/42rDXWsWKPHWHyE9clJGAzRhIfrOWwsWvgXSE5KBMDpcim+B+l0BIc9oxQHiH3+RXShYQTpdNhsNnI//AinywVAQsLahQvwQJDlGXN51nw6ac41CxLQ2mYGQJQkTp2oQqfTMTFmxTr0D13Xf1XyOq/9gnVoiAmrFa1Wy/FPP0GU3O62t3csXIDJVE7vfQsAUVGRVJSVMPqgH8ejSa42fM35ylLOV5by87mzOB5NMvKgD1PJxxgM0QD09fVTaipfuADbxAT7c3Kx2+2Ae7/f89479LbdYbjfwkBPNwM93Qz1W+htu0PmnnfJ2LUTAIfDSU7uQazj4wsXANDS2oap/KgyP1xUQFLCOoYsFiwdZiwdZoYtFtbGx1FUmK/klZjKuXX79v/Rz68Jq2tqaWq6BLjvAp5+8ECr1fLZiSoCAgIA+OHKT5yp/Wo+1PM/CwqNxT794MFs3/Pzi/z/KX4w50bkjbGxMXIO5NFQX4dGoyE9LZWsfZkIAj6+jz4cnS/tk11E77S0zugHY2E+RQWPfS8tm5/vswXMkOuaciljz27mjeqaWi42NbvjTicOlxNwnxPVNbU++d4c3tzTeCgBNwHlttjYeIGtr7yM2dxOV2eXX9V5B/Npar5ES2sb4D4xm5ov+83t6uzixo2bJCYm0Nh4wScsaFfHZCPLp/2ufsqQZeGIAIja1YZryMKmJa4/IqrtsSrAJU2JbwGDS1h8SoasMYtlWAXwcLCrW5xiC9C6BMVHZHhjYqDnOwDloj45MTLssD33hVo72YeKEAF0QOAiFR0DWmRZ+FzS2PeNP/jrd0/gXzBo1IcP8R3wAAAAAElFTkSuQmCC">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="theme-color" content="#0B1722">
 <title>Демонстрация · Форум «Россия — спортивная держава» · Спортзал 24×46 м, Дудинка</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -38,6 +41,12 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',system-u
 .mnItem.cur{background:rgba(38,80,58,.5);border-color:rgba(80,220,160,.35)}
 .mnItem.cur .mnIco{background:rgba(46,140,96,.5);border-color:rgba(80,220,160,.4);color:#7dffc4}
 .mnItem.cur b::after{content:"\00b7 вы здесь";color:#3ecf8e;font-size:11px;font-weight:600;margin-left:6px}
+#modNavBtn .mnEmblem{width:26px;height:26px;flex:none;border-radius:7px;display:block}
+.mnBrand{display:flex;align-items:center;gap:9px;padding:9px 10px 11px;border-bottom:1px solid rgba(140,190,255,.14);margin-bottom:6px;text-decoration:none}
+.mnBrand svg{width:30px;height:30px;flex:none;border-radius:8px;display:block}
+.mnBrand .mnBtxt{display:flex;flex-direction:column;gap:1px;min-width:0}
+.mnBrand .mnBtxt b{font-size:12.5px;font-weight:700;letter-spacing:.28em;color:#EAF3FA}
+.mnBrand .mnBtxt span{font-size:10.5px;color:rgba(198,224,240,.58);letter-spacing:.06em}
 @media (max-width:640px){
 #modNav{top:calc(10px + env(safe-area-inset-top));left:10px}
 #modNavBtn{padding:9px 11px}
@@ -67,8 +76,13 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',system-u
 #exitBtn:hover{background:rgba(160,26,30,.9);color:#fff;border-color:#ff6b6b}
 #pauseHint{position:fixed;z-index:40;right:14px;bottom:14px;font-size:11.5px;color:#8aa4cc;background:rgba(13,20,32,.6);padding:5px 10px;border-radius:8px;pointer-events:none}
 #pauseHint.paused{color:#f2c14e;background:rgba(60,44,10,.75)}
+#card .cEmblem{width:56px;height:56px;margin:0 auto 16px;display:block}
+#fBrand{position:fixed;z-index:65;left:14px;bottom:16px;width:38px;height:38px;padding:5px;border-radius:10px;border:1px solid rgba(143,214,234,.3);background:rgba(11,23,34,.7);backdrop-filter:blur(6px);opacity:.85;transition:opacity .15s,border-color .15s}
+#fBrand:hover{opacity:1;border-color:#8FD6EA}
+#fBrand svg{width:100%;height:100%;display:block;border-radius:6px}
 @media (max-width:640px){
 #capWrap{bottom:26px;padding:10px 14px}
+#fBrand{width:32px;height:32px;left:10px;bottom:12px;padding:4px}
 #pauseHint{display:none}
 #exitBtn{padding:8px 10px;font-size:11.5px;top:calc(10px + env(safe-area-inset-top));right:10px}
 #card{padding:24px 20px}
@@ -77,9 +91,10 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',system-u
 </head>
 <body>
 <nav id="modNav">
-  <button id="modNavBtn" aria-haspopup="true" aria-expanded="false"><span class="burger"><i></i><i></i><i></i></span><span class="mnLbl">Модули проекта</span></button>
+  <button id="modNavBtn" aria-haspopup="true" aria-expanded="false"><svg class="mnEmblem" viewBox="0 0 100 100" fill="none" aria-hidden="true"><g stroke="#EAF3FA" stroke-width="9" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="80"/><line x1="82" y1="20" x2="82" y2="80"/><line x1="25" y1="50" x2="46" y2="22"/><line x1="25" y1="50" x2="46" y2="78"/><line x1="75" y1="50" x2="54" y2="22"/><line x1="75" y1="50" x2="54" y2="78"/></g><circle cx="50" cy="50" r="12" fill="#8FD6EA" opacity=".28"/><circle cx="50" cy="50" r="7" fill="#8FD6EA"/></svg><span class="burger"><i></i><i></i><i></i></span><span class="mnLbl">Модули проекта</span></button>
   <div id="modNavMenu" role="menu">
     <div class="mnHead"><button class="mnBack" id="modNavBack" title="Назад к 3D-модели">‹</button><span class="mnTitle">Модули проекта</span><button class="mnClose" id="modNavClose" title="Закрыть">✕</button></div>
+    <a class="mnBrand" href="https://github.com/AliKerimov65/vomirek" target="_blank" rel="noopener" title="VOMIREK · архитектурное бюро Али Керимова"><svg viewBox="0 0 100 100" fill="none" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#0B1722"/><g stroke="#EAF3FA" stroke-width="9" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="80"/><line x1="82" y1="20" x2="82" y2="80"/><line x1="25" y1="50" x2="46" y2="22"/><line x1="25" y1="50" x2="46" y2="78"/><line x1="75" y1="50" x2="54" y2="22"/><line x1="75" y1="50" x2="54" y2="78"/></g><circle cx="50" cy="50" r="12" fill="#8FD6EA" opacity=".28"/><circle cx="50" cy="50" r="7" fill="#8FD6EA"/></svg><span class="mnBtxt"><b>VOMIREK</b><span>архитектурное бюро · Али Керимов</span></span></a>
     <a class="mnItem" href="index.html" data-page="index.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l8.5 4.9v9.2L12 21.5l-8.5-4.9V7.4z"/><path d="M12 12l8.5-4.6M12 12v9.5M12 12L3.5 7.4"/></svg></span><span class="mnTxt"><b>3D-модель зала</b><span>Спортзал 24 × 46 м · Дудинка</span></span><span class="mnArr">&rarr;</span></a>
     <a class="mnItem" href="assembly.html" data-page="assembly.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M6 19v-5l6-4 6 4v5"/><path d="M12 3v5"/><path d="M9.5 5.5L12 3l2.5 2.5"/></svg></span><span class="mnTxt"><b>Мультипликация сборки</b><span>12 этапов монтажа</span></span><span class="mnArr">&rarr;</span></a>
     <a class="mnItem" href="render.html" data-page="render.html"><span class="mnIco"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg></span><span class="mnTxt"><b>Визуализация день/ночь</b><span>Арт-подача объекта</span></span><span class="mnArr">&rarr;</span></a>
@@ -96,9 +111,10 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',system-u
 <button id="exitBtn" title="Вернуться к 3D-модели">✕ <span>Выйти из демонстрации</span></button>
 <div id="capWrap"><div id="capTitle"></div><div id="capSub"></div></div>
 <div id="cardBG"></div>
-<div id="card"><div class="cKick" id="cKick"></div><div class="cTitle" id="cTitle"></div><div class="cSub" id="cSub"></div></div>
+<div id="card"><svg class="cEmblem" viewBox="0 0 100 100" fill="none" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#0B1722"/><g stroke="#EAF3FA" stroke-width="9" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="80"/><line x1="82" y1="20" x2="82" y2="80"/><line x1="25" y1="50" x2="46" y2="22"/><line x1="25" y1="50" x2="46" y2="78"/><line x1="75" y1="50" x2="54" y2="22"/><line x1="75" y1="50" x2="54" y2="78"/></g><circle cx="50" cy="50" r="12" fill="#8FD6EA" opacity=".28"/><circle cx="50" cy="50" r="7" fill="#8FD6EA"/></svg><div class="cKick" id="cKick"></div><div class="cTitle" id="cTitle"></div><div class="cSub" id="cSub"></div></div>
 <div id="progWrap"><div id="prog"></div></div>
 <div id="pauseHint">Пробел — пауза · Esc — выход из демонстрации</div>
+<a id="fBrand" href="https://github.com/AliKerimov65/vomirek" target="_blank" rel="noopener" title="VOMIREK · архитектурное бюро Али Керимова"><svg viewBox="0 0 100 100" fill="none" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#0B1722"/><g stroke="#EAF3FA" stroke-width="9" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="80"/><line x1="82" y1="20" x2="82" y2="80"/><line x1="25" y1="50" x2="46" y2="22"/><line x1="25" y1="50" x2="46" y2="78"/><line x1="75" y1="50" x2="54" y2="22"/><line x1="75" y1="50" x2="54" y2="78"/></g><circle cx="50" cy="50" r="12" fill="#8FD6EA" opacity=".28"/><circle cx="50" cy="50" r="7" fill="#8FD6EA"/></svg></a>
 <script type="module">
 import * as THREE from 'three';
 
