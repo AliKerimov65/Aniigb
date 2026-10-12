@@ -17,7 +17,11 @@
   #panel h1 { font-size:15px; margin:0 0 2px 0; color:#0e3a5c; }
   #panel .sub { font-size:11.5px; color:#5a6b78; margin-bottom:10px; }
   #panel fieldset { border:1px solid #d4dee6; border-radius:7px; margin:0 0 10px 0; padding:7px 9px 8px; }
-  #panel legend { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:#4a6070; padding:0 5px; }
+  #panel legend { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:#4a6070; padding:0 5px; cursor:pointer; user-select:none; }
+  #panel legend::after { content:"▾"; float:right; font-size:10px; color:#7a8b99; margin-left:6px; }
+  #panel fieldset.closed > *:not(legend) { display:none; }
+  #panel fieldset.closed legend::after { content:"▸"; }
+  #panel fieldset.closed { padding-bottom:5px; }
   #panel label { display:flex; align-items:center; gap:7px; padding:2.5px 0; cursor:pointer; font-size:12.5px; }
   #panel input[type=checkbox] { accent-color:#0e6aa8; }
   .sw { display:inline-block; width:11px; height:11px; border-radius:2px; border:1px solid rgba(0,0,0,.25); flex:none; }
@@ -46,7 +50,7 @@
   #panel { top:calc(58px + env(safe-area-inset-top)); left:10px; right:10px; width:auto;
     max-height:38vh; max-height:38dvh; padding:10px 12px; font-size:12px; }
   #panel.collapsed { max-height:46px; overflow:hidden; }
-  #hint { bottom:calc(8px + env(safe-area-inset-bottom)); font-size:10px; padding:2px 8px; max-width:90vw; }
+  #hint { bottom:calc(8px + env(safe-area-inset-bottom)); font-size:10px; padding:2px 8px; max-width:calc(100vw - 96px); }
   .views button { flex:1 1 30%; font-size:11px; }
 }
 #pToggle { display:none; position:absolute; top:calc(10px + env(safe-area-inset-top)); right:10px; z-index:10;
@@ -116,8 +120,9 @@
 #forumBtn:hover{transform:translateX(-50%) translateY(-2px)}
 #forumBtn svg{flex:none}
 @keyframes forumPulse{0%,100%{box-shadow:0 6px 24px rgba(160,16,30,.45)}50%{box-shadow:0 6px 30px rgba(242,193,78,.7)}}
-@media (max-width:640px){#forumBtn{bottom:calc(44px + env(safe-area-inset-bottom));font-size:12px;padding:10px 14px;max-width:calc(100vw - 24px)}}
-#wmBrand{position:fixed;right:16px;bottom:14px;z-index:15;display:flex;align-items:center;gap:9px;opacity:.45;pointer-events:none;user-select:none}
+@media (max-width:640px){#forumBtn{bottom:calc(96px + env(safe-area-inset-bottom));font-size:12px;padding:10px 14px;max-width:calc(100vw - 24px)}}
+#wmBrand{position:fixed;right:16px;bottom:14px;z-index:15;display:flex;align-items:center;gap:9px;opacity:.5;user-select:none;text-decoration:none;cursor:pointer;transition:opacity .15s}
+#wmBrand:hover{opacity:.95}
 #wmBrand svg{width:38px;height:38px;display:block}
 #wmBrand .wmTxt{display:flex;flex-direction:column;gap:2px;line-height:1.15}
 #wmBrand .wmTxt b{font-size:11px;font-weight:700;letter-spacing:.28em;color:#EAF3FA}
@@ -156,7 +161,7 @@
 </nav>
 
 <div id="scene"></div>
-<div id="wmBrand" aria-hidden="true"><svg viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="22" fill="#0B1722"/><g stroke="#EAF3FA" stroke-width="9" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="80"/><line x1="82" y1="20" x2="82" y2="80"/><line x1="25" y1="50" x2="46" y2="22"/><line x1="25" y1="50" x2="46" y2="78"/><line x1="75" y1="50" x2="54" y2="22"/><line x1="75" y1="50" x2="54" y2="78"/></g><circle cx="50" cy="50" r="12" fill="#8FD6EA" opacity=".28"/><circle cx="50" cy="50" r="7" fill="#8FD6EA"/></svg><span class="wmTxt"><b>VOMIREK</b><span>архитектурное бюро</span></span></div>
+<a id="wmBrand" href="https://vomirek.com/" target="_blank" rel="noopener" title="VOMIREK · архитектурное бюро Vomirek"><svg viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="22" fill="#0B1722"/><g stroke="#EAF3FA" stroke-width="9" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="80"/><line x1="82" y1="20" x2="82" y2="80"/><line x1="25" y1="50" x2="46" y2="22"/><line x1="25" y1="50" x2="46" y2="78"/><line x1="75" y1="50" x2="54" y2="22"/><line x1="75" y1="50" x2="54" y2="78"/></g><circle cx="50" cy="50" r="12" fill="#8FD6EA" opacity=".28"/><circle cx="50" cy="50" r="7" fill="#8FD6EA"/></svg><span class="wmTxt"><b>VOMIREK</b><span>архитектурное бюро</span></span></a>
 <div id="labels"></div>
 <a id="forumBtn" href="forum.html" title="Цикличный ролик проекта для рекламного стенда форума"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M10 8l4.6 3-4.6 3z" fill="currentColor" stroke="none"/><path d="M9 20.5h6"/></svg><span>Форум «Россия — спортивная держава» · Демонстрация</span></a>
 <button id="pToggle" title="Скрыть/показать панель">☰</button>
@@ -883,6 +888,16 @@ const gDims = grp('dims');
 
 /* ================= UI ================= */
 document.getElementById('pToggle').onclick=()=>{document.getElementById('panel').classList.toggle('collapsed')};
+// раскрывающиеся секции панели: тап по заголовку (Слои модели / Метки на сцене / Виды)
+document.querySelectorAll('#panel fieldset').forEach(fs => {
+  const lg = fs.querySelector('legend');
+  if (lg) lg.addEventListener('click', () => fs.classList.toggle('closed'));
+});
+// на смартфоне панель и её списки по умолчанию свернуты — открываются правой кнопкой ☰
+if (matchMedia('(max-width: 640px)').matches){
+  document.getElementById('panel').classList.add('collapsed');
+  document.querySelectorAll('#panel fieldset').forEach(fs => fs.classList.add('closed'));
+}
 // выключатели категорий меток (на смартфоне все метки по умолчанию скрыты)
 const labelsBox = document.getElementById('labels');
 function applyLbl(){
