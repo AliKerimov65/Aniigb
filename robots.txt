@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dudinka.vomirek.com/sitemap.xml
