@@ -17,19 +17,16 @@ body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:var(--navy2)
 h1,h2,h3,.serif{font-family:'Playfair Display','PT Serif',Georgia,serif}
 a{color:var(--gold2)}
 .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
-.hero{position:relative;height:100vh;min-height:560px;overflow:hidden}
+.hero{position:relative;height:64vh;min-height:400px;overflow:hidden}
 .hero .bg{position:absolute;inset:0}
 .hero .bg img{width:100%;height:100%;object-fit:cover}
 .hero .tag{position:absolute;top:96px;z-index:4;padding:8px 18px;font-family:'Playfair Display',serif;font-size:clamp(12px,1.3vw,19px);letter-spacing:.14em;text-transform:uppercase;background:rgba(13,20,36,.72);border:1px solid rgba(201,162,39,.5)}
 .hero .tag.l{left:30px;color:#d7d9e0}
 .hero .tag.r{right:30px;color:var(--gold2)}
-.hero .caption{position:absolute;left:0;right:0;bottom:0;z-index:7;padding:34px 30px 40px;background:linear-gradient(transparent,rgba(10,15,28,.93) 55%)}
-.hero h1{font-size:clamp(26px,4.2vw,56px);font-weight:900;color:#f4efdd;line-height:1.12;max-width:1050px}
-.hero h1 span{color:var(--gold)}
-.hero .sub{margin-top:10px;color:#c6ccdb;font-size:clamp(13px,1.3vw,17px);max-width:860px}
-.anchors{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-.anchors a{display:inline-block;padding:7px 14px;border:1px solid rgba(201,162,39,.55);border-radius:2px;color:var(--gold2);text-decoration:none;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;transition:all .15s}
-.anchors a:hover{background:var(--gold);color:var(--navy2)}
+.heroTitle{background:var(--navy2);padding:46px 0 42px}
+.heroTitle h1{font-size:clamp(26px,4.2vw,56px);font-weight:900;color:#f4efdd;line-height:1.12;max-width:1050px}
+.heroTitle h1 span{color:var(--gold)}
+.heroTitle .sub{margin-top:12px;color:#c6ccdb;font-size:clamp(13px,1.3vw,17px);max-width:860px}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));border-top:1px solid rgba(201,162,39,.3);border-bottom:1px solid rgba(201,162,39,.3);background:var(--navy)}
 .stats div{padding:26px 20px;text-align:center;border-right:1px solid rgba(255,255,255,.06)}
 .stats div:last-child{border-right:0}
@@ -123,12 +120,12 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 @media(max-width:720px){
   .wrap{padding:0 18px}
   section{padding:56px 0}
-  .hero{min-height:480px;height:92vh}
+  .hero{min-height:260px;height:42vh}
   .hero .tag{top:70px;padding:5px 10px;font-size:10.5px;letter-spacing:.1em;max-width:62vw}
   .hero .tag.l{left:14px}
   .hero .tag.r{right:14px;top:104px}
   #toTop{width:38px;height:38px;font-size:16px}
-  .hero .caption{padding:22px 18px 30px}
+  .heroTitle{padding:32px 0 28px}
   .stats{grid-template-columns:repeat(2,1fr)}
   .stats div{padding:18px 10px;border-bottom:1px solid rgba(255,255,255,.06)}
   .stats div:nth-child(2n){border-right:0}
@@ -210,14 +207,14 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
   <div class="bg"><img src="https://lxgipzdybigdpdcmcnez.supabase.co/storage/v1/object/public/files/dudinka/presentation/hero.jpg" alt="Спортивный зал «Таймыр» — общий вид, день"></div>
   <div class="tag l">Дудинка · Таймыр · 69°24′ с. ш.</div>
   <div class="tag r">Система МАРХИ · концепция</div>
-  <div class="caption">
+</header>
+
+<div class="heroTitle">
+  <div class="wrap">
     <h1>Спортивный зал «Таймыр» 24 × 46 м — <span>модульное сооружение для Арктики</span></h1>
     <div class="sub">Полная презентация проекта: панели внутри каркаса, фундамент-зеркало, доставка по Енисею в короткую навигацию, монтаж без тяжёлых кранов. Концепция АНО «АНИИГБ» им. М. В. Кима.</div>
-    <div class="anchors">
-      <a href="#arctic">Арктика</a><a href="#construct">Конструктив</a><a href="#arch">Архитектура</a><a href="#arena">Арена</a><a href="#plans">Чертежи</a><a href="#tep">ТЭП и смета</a><a href="#logistics">Логистика</a><a href="#model">3D-модель</a>
-    </div>
   </div>
-</header>
+</div>
 
 <div class="stats">
   <div><b>1 104 м²</b><span>площадь здания, 24 × 46 м в осях</span></div>
